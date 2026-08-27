@@ -28,6 +28,11 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
+  <!-- Marks the document as scripted BEFORE the stylesheet is parsed. Every
+       reveal's hidden state is scoped to .js, so if this one line never runs —
+       script error, JS disabled, blocked request — nothing is ever hidden and
+       the page renders complete. -->
+  <script>document.documentElement.className += ' js';</script>
   <style>
 /* ============================================================
    SELF-HOSTED FONTS (Inter v20, Playfair Display v40)
@@ -153,6 +158,9 @@
   --color-mist: #F0EDE8;
   --font-display: 'Playfair Display', Georgia, serif;
   --font-sans: 'Inter', system-ui, sans-serif;
+  /* One timing language for every reveal on the page, so no section drifts. */
+  --reveal-dur: 0.55s;
+  --reveal-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .skip-link {
@@ -201,13 +209,28 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
    ============================================================ */
 /* Duration and travel are deliberately restrained: the stagger does the work,
    not the distance. will-change is applied at intersection time, not here, so
-   ~60 elements are not promoted to their own layer on page load. */
-.reveal {
+   ~60 elements are not promoted to their own layer on page load.
+
+   The HIDDEN state is scoped to .js and the VISIBLE state is not, which is two
+   deliberate decisions. Scoping the hidden state means a page whose script
+   never ran has nothing hidden to reveal. Leaving `.visible` unscoped keeps it
+   at the same specificity it has always had (0,2,0), so the hover transforms
+   declared later in this sheet — .category-card:hover, .collage-img-main:hover
+   — still win on source order. Raising it to `.js .reveal.visible` would have
+   quietly killed every one of those lifts. */
+.js .reveal,
+.js .reveal-img,
+.js .faq-reveal {
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.42s cubic-bezier(0.16,1,0.3,1), transform 0.42s cubic-bezier(0.16,1,0.3,1);
+  transition: opacity var(--reveal-dur) var(--reveal-ease),
+              transform var(--reveal-dur) var(--reveal-ease);
 }
-.reveal.visible { opacity: 1; transform: translateY(0); }
+.js .reveal     { transform: translateY(18px); }
+/* Imagery travels less and settles out of a hair of scale, so it reads as the
+   photograph arriving rather than the box sliding. */
+.js .reveal-img { transform: translateY(14px) scale(1.02); transition-duration: 0.65s; }
+.reveal.visible,
+.reveal-img.visible { opacity: 1; transform: none; }
 .reveal-delay-1 { transition-delay: 0.1s; }
 .reveal-delay-2 { transition-delay: 0.2s; }
 .reveal-delay-3 { transition-delay: 0.3s; }
@@ -243,6 +266,21 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 }
 .wave-divider svg { display: block; width: 100%; height: 70px; }
 .section-header { text-align: center; max-width: 700px; margin: 0 auto 64px; }
+/* Holds a phrase together across a wrap. Used on the shop address, which must
+   never break as "Пещерско шосе / 26." */
+.nb { white-space: nowrap; }
+/* A break that exists on desktop only. `display: none` on a <br> suppresses the
+   break itself, so narrower viewports wrap the sentence naturally. */
+.br-desktop { display: none; }
+@media (min-width: 1025px) { .br-desktop { display: inline; } }
+/* Two headings are set to hold on one line on desktop — "Всичко прясно. Всичко
+   избрано." and "Разгледайте магазина отблизо". At the 51px display cap both
+   run ~720px, just past the shared 700px measure, so the fix is the measure and
+   not the type scale: nothing about the hierarchy changes. */
+@media (min-width: 1025px) {
+  .section-categories .section-header,
+  .section-store .section-header { max-width: 920px; }
+}
 .section-header h2 {
   font-size: clamp(2rem, 4vw, 3.2rem);
   font-weight: 600;
@@ -293,9 +331,6 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
      already centres. */
   white-space: nowrap;
 }
-/* Full wording by default; the short form only where measurement showed the
-   six-item row colliding with the logo and the CTA (roughly 1025-1250px). */
-.nav-label-short { display: none; }
 .nav-links a {
   font-size: 0.85rem; font-weight: 500; letter-spacing: 0.04em;
   color: var(--color-slate-deep);
@@ -454,11 +489,24 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 /* ============================================================
    HERO
    ============================================================ */
-.hero { position: relative; height: calc(100vh - 140px); min-height: 500px; overflow: hidden; }
+.hero {
+  position: relative; height: calc(100vh - 140px); min-height: 500px; overflow: hidden;
+  /* The poster a second time, painted as a background. The <video> element's
+     own poster is dropped the instant a frame decodes, so it cannot cover the
+     cases that matter here: autoplay refused, a slow first byte, or reduced
+     motion. This one sits underneath for the life of the page, which is why
+     there is never a black rectangle behind the hero copy. */
+  background: #1A1A2E url('images/hero-poster-900.webp') center / cover no-repeat;
+}
 .hero-video {
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; z-index: 0; pointer-events: none;
 }
+/* Faded in on the `playing` event rather than shown immediately, so the cut
+   from poster to first frame is not a flash. Scoped to .js for the same reason
+   the reveals are: with no script the video is simply visible. */
+.js .hero-video { opacity: 0; transition: opacity 0.6s ease; }
+.js .hero-video.is-playing { opacity: 1; }
 .hero-overlay {
   position: absolute; inset: 0; z-index: 1;
   background: linear-gradient(
@@ -754,12 +802,17 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 /* ============================================================
    TESTIMONIALS
    ============================================================ */
-.section-testimonials { background: var(--color-charcoal); padding: 120px 0 30px; position: relative; overflow: hidden; }
+/* padding-bottom is 0 and the breathing room lives on .testimonials-wrap
+   instead. The .wave-divider is a CHILD of this section, so a bottom padding
+   here painted 30px of charcoal BELOW the wave — the dark strip that used to
+   sit between the reviews and the FAQ. Every other waved section on the page
+   already spaces itself from its inner wrapper for exactly this reason. */
+.section-testimonials { background: var(--color-charcoal); padding: 120px 0 0; position: relative; overflow: hidden; }
 .testimonials-header { text-align: center; padding: 0 60px; margin-bottom: 20px; }
 .testimonials-header .eyebrow { color: var(--color-gold); }
 .testimonials-header h2 { font-size: clamp(2rem,4vw,3.2rem); font-weight: 600; color: #fff; margin-bottom: 12px; }
 .testimonials-sub { color: rgba(255,255,255,0.52); font-size: 1rem; line-height: 1.65; margin-bottom: 52px; }
-.testimonials-wrap { position: relative; padding: 0 148px; }
+.testimonials-wrap { position: relative; padding: 0 148px 30px; }
 .testimonials-viewport { overflow: hidden; user-select: none; touch-action: pan-y; }
 .testimonials-track { display: flex; gap: 24px; will-change: transform; transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94); }
 .testimonial-card {
@@ -796,35 +849,80 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 
 /* ============================================================
    STORE SHOWCASE
-   Asymmetric on purpose: one large establishing shot of the room, three
-   narrow bands of the counters beside it. Every master ships 16:9 and each
-   tile crops it with object-fit, so the ratios below are free to differ per
-   breakpoint without a second set of files. aspect-ratio on the tile (not the
-   image) is what keeps the grid from shifting while the images load.
+   Products only — no room shots. Seven photographs in two orientations, so the
+   grid is banded by orientation rather than forced into one ratio: a wide
+   establishing shot of the cheese counter, two landscape counters below it,
+   then the four upright fridges in a row, which at 1:2 read as the doors they
+   actually are. Cropping those uprights into a 16:9 tile would have thrown
+   away three quarters of every frame.
+   Tiles carry the aspect-ratio, never the images, which is what keeps the grid
+   from shifting while they load. Adding an eighth photo is one more <figure>
+   with the right modifier — no CSS edit.
    ============================================================ */
 .section-store { background: #F4F1EC; padding: 100px 80px 0; position: relative; }
-.section-store .eyebrow { color: #8a6a2e; }
-.store-grid {
-  max-width: 1200px; margin: 0 auto; padding-bottom: 100px;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  grid-template-rows: repeat(3, 1fr);
-  gap: 20px;
-}
+/* #3d6340 — the same dark green every other section label uses (categories,
+   the feature blocks, the FAQ). This one was the odd gold out. */
+.section-store .eyebrow { color: #3d6340; }
+.store-gallery { max-width: 1200px; margin: 0 auto; padding-bottom: 100px; }
+.store-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .store-tile {
   margin: 0; overflow: hidden;
   border-radius: 10px;
-  aspect-ratio: 393 / 162;
   box-shadow: 0 10px 30px rgba(26,26,46,0.10);
   background: var(--color-mist);
 }
 .store-tile img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.6s ease; }
 .store-tile:hover img { transform: scale(1.04); }
+/* The establishing shot. 21:9 rather than the source's own 16:9 — the counter
+   runs the full width of the frame, so the crop only spends ceiling and floor
+   tiles, and the band keeps it from towering over the six photographs below. */
+/* 2:1, not the 21:9 first tried. The counter photograph carries empty glass
+   above the cheese and the case's white base below it, so a deep crop has to
+   spend one or the other and no object-position can win back both — measured,
+   the subject already sits on the frame's centre line. Taking less off each end
+   is the honest fix; 2:1 still reads as a band rather than a second hero. */
 .store-tile--wide {
-  grid-column: 1; grid-row: 1 / 4;
-  aspect-ratio: auto;
+  grid-column: 1 / -1;
+  aspect-ratio: 2 / 1;
   box-shadow: 0 16px 40px rgba(26,26,46,0.13);
 }
+.store-tile--land { grid-column: span 2; aspect-ratio: 16 / 9; }
+.store-tile--port { grid-column: span 1; aspect-ratio: 1 / 2; }
+/* The uprights are 1:2.1 at source against a 1:2 tile, so they barely crop on
+   desktop — but the mobile carousel squares every slide, and there this line is
+   what decides which shelves survive. Biased upward, where the fridges are
+   fullest. The wide tile needs nothing: its subject is already centred. */
+.store-tile--port img { object-position: center 32%; }
+
+/* --- gallery controls (mobile only; see the carousel block below) --- */
+.store-nav { display: none; }
+.store-arrow {
+  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+  border: 1.5px solid rgba(61,99,64,0.45); background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  color: #3d6340;
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, opacity 0.3s ease;
+}
+/* The reviews carousel's gold arrows are reused nowhere here on purpose: on
+   this section's #F4F1EC the gold measures about 1.9:1, which is not a control
+   anyone can see. #3d6340 is the section's own green and measures ~6.4:1. */
+.store-arrow:hover:not(:disabled) { background: #3d6340; border-color: #3d6340; color: #fff; }
+.store-arrow:active:not(:disabled) { background: #3d6340; border-color: #3d6340; color: #fff; }
+.store-arrow:focus-visible { outline: 2px solid #3d6340; outline-offset: 3px; }
+.store-arrow:disabled { opacity: 0.28; cursor: default; }
+.store-dots { display: flex; align-items: center; gap: 2px; }
+.store-dot {
+  width: 24px; height: 24px; padding: 0; border: none; background: none;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.store-dot::before {
+  content: ''; width: 7px; height: 7px; border-radius: 50%;
+  background: rgba(61,99,64,0.28);
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+.store-dot.is-current::before { background: #3d6340; transform: scale(1.4); }
+.store-dot:focus-visible { outline: 2px solid #3d6340; outline-offset: 1px; border-radius: 50%; }
 
 /* ============================================================
    FIND US
@@ -866,7 +964,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 /* ============================================================
    FAQ
    ============================================================ */
-.section-faq { background: #fff; padding: 100px 80px 120px; position: relative; }
+.section-faq { background: #F4F1EC; padding: 100px 80px 120px; position: relative; }
 .section-faq .eyebrow { color: #3d6340; }
 .faq-list { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
 .faq-item {
@@ -1017,21 +1115,24 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  .reveal { opacity: 1; transform: none; }
-  .faq-reveal { opacity: 1; transform: none; }
-  .category-card.reveal { opacity: 1; transform: none; }
+  .js .reveal,
+  .js .reveal-img,
+  .js .faq-reveal,
+  .js .category-card.reveal { opacity: 1; transform: none; }
+  /* The hero video is never started under reduced motion (see the inline
+     script beside the element), so the poster is what shows — but the fade
+     must not strand it at zero opacity if that ever changes. */
+  .js .hero-video { opacity: 1; }
 }
 
 /* ============================================================
    RESPONSIVE — NARROW DESKTOP
    Six nav items outgrow the space between the logo and the CTA below ~1250px.
-   The gap is spent first; the FAQ label is shortened only because that was
-   still not enough, and only inside this band.
+   Tightening the gap is now the whole fix: the FAQ item is the abbreviation
+   ЧЗБ at every width, so there is no longer a long label to swap out.
    ============================================================ */
 @media (min-width: 769px) and (max-width: 1330px) {
   .nav-links { gap: 16px; }
-  .nav-label-long  { display: none; }
-  .nav-label-short { display: inline; }
 }
 
 /* ============================================================
@@ -1054,15 +1155,14 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   .section-feature { padding: 80px 48px; }
   .feature-inner { gap: 48px; }
   .section-store { padding: 80px 48px 0; }
-  /* Two rows of two rather than a tall thin column: at this width the side
-     tiles would otherwise be under 200px wide. */
-  .store-grid {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto auto;
-    gap: 16px; padding-bottom: 80px;
-  }
-  .store-tile { aspect-ratio: 16 / 9; }
-  .store-tile--wide { grid-column: 1 / -1; grid-row: auto; aspect-ratio: 16 / 9; }
+  .store-gallery { padding-bottom: 80px; }
+  /* Two columns. The uprights pair off instead of running four across, where
+     each would be under 200px wide, and they relax from 1:2 to 2:3 so a row of
+     two does not run the height of the viewport. */
+  .store-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .store-tile--wide { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
+  .store-tile--land { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
+  .store-tile--port { grid-column: span 1; aspect-ratio: 2 / 3; }
   .testimonials-wrap { padding: 0 80px; }
   .carousel-arrows { padding: 0 28px; }
   .section-faq { padding: 80px 48px 96px; }
@@ -1114,10 +1214,19 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   .stats-bar { height: auto; min-height: unset; padding: 24px 0; }
   .stats-container {
     display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 4px; padding: 0 14px;
+    gap: 8px; padding: 0 14px;
   }
-  .stat-item { padding: 4px 2px; }
+  .stat-item { padding: 4px 2px; position: relative; }
+  /* The .stat-divider elements stay hidden: as grid items they would become a
+     fourth and fifth column. The rule is drawn on the item instead, centred in
+     the 8px gap — hence -4px — and inset top and bottom to roughly the same
+     proportion the desktop divider holds (48px of a ~90px row). The colour is
+     the desktop divider's own value, not a new one. */
   .stat-divider { display: none; }
+  .stat-item ~ .stat-item::before {
+    content: ''; position: absolute; left: -4px; top: 10%; bottom: 10%;
+    width: 1px; background: rgba(44,62,80,0.11);
+  }
   .stat-icon { width: 18px; height: 18px; margin-bottom: 6px; }
   .stat-number { font-size: 1.3rem; }
   .stat-unit { font-size: 0.6em; }
@@ -1157,16 +1266,47 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   .feature-text .feature-title { font-size: 1.45rem; }
   .feature-trust-strip { margin-top: 1.25rem; padding-top: 1.1rem; gap: 8px; }
 
-  /* --- STORE SHOWCASE --- */
+  /* --- STORE SHOWCASE — carousel --- */
+  /* Scroll-snap rather than a transform track. The browser already does
+     momentum, snapping and swipe properly, so the arrows only have to call
+     scrollBy — and with no script at all the strip is still swipeable. The
+     overflow lives on the track, so the page itself never scrolls sideways.
+     Every slide is square, the ratio the mobile review cards already use: the
+     seven photographs are mixed orientation, and one shared frame is what
+     guarantees the height never changes between them. */
   .section-store { padding: 60px 24px 0; }
-  .store-grid { grid-template-columns: 1fr; gap: 12px; padding-bottom: 60px; }
-  .store-tile, .store-tile--wide { grid-column: auto; grid-row: auto; aspect-ratio: 16 / 9; }
+  .store-gallery { padding-bottom: 60px; }
+  .store-grid {
+    display: flex; gap: 12px;
+    overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .store-grid::-webkit-scrollbar { display: none; }
+  .store-tile,
+  .store-tile--wide,
+  .store-tile--land,
+  .store-tile--port {
+    flex: 0 0 100%; grid-column: auto; grid-row: auto;
+    /* `start`, not `center`. The slides are exactly as wide as the track, so
+       there is nothing to centre — and centre would have snapped to a position
+       half a gap away from the one scrollTo() aims the arrows at, leaving the
+       two fighting each other by 6px on every press. */
+    aspect-ratio: 1 / 1; scroll-snap-align: start;
+  }
+  /* Below the photograph, never over it — no control has to fight a picture
+     for contrast, which is the same move the reviews arrows make on mobile. */
+  .store-nav {
+    display: flex; align-items: center; justify-content: center;
+    gap: 14px; padding: 18px 0 2px;
+  }
 
   /* --- TESTIMONIALS --- */
-  .section-testimonials { padding: 64px 0 18px; }
+  .section-testimonials { padding: 64px 0 0; }
   .testimonials-header { padding: 0 24px; }
   .testimonials-sub { margin-bottom: 36px; }
-  .testimonials-wrap { padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .testimonials-wrap { padding: 0 0 18px; display: flex; flex-direction: column; overflow: hidden; }
   .testimonials-viewport { order: 1; overflow: hidden; padding: 0; }
   .carousel-arrows {
     position: static; transform: none; order: 2;
@@ -1218,6 +1358,10 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
    LABELS stay at 0.69rem (~11px) at every width.
    ============================================================ */
 @media (max-width: 360px) {
+  /* 7 dots at 24px plus two 44px arrows overruns a 320px viewport, so the dots
+     give back the 4px each; the arrows keep their 44px target. */
+  .store-nav { gap: 10px; }
+  .store-dot { width: 20px; height: 20px; }
   .stat-number { font-size: 1.12rem; }
   .stat-icon { width: 17px; height: 17px; margin-bottom: 5px; }
   .stat-label { letter-spacing: 0.04em; }
@@ -1283,7 +1427,9 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
         <li><a href="#categories">Продукти</a></li>
         <li><a href="#store">Нашият магазин</a></li>
         <li><a href="#testimonials">Отзиви</a></li>
-        <li><a href="#faq"><span class="nav-label-long">Често задавани въпроси</span><span class="nav-label-short">Въпроси</span></a></li>
+        <!-- aria-label carries the full phrase: a bare three-letter
+             abbreviation is not something a screen reader can expand. -->
+        <li><a href="#faq" aria-label="Често задавани въпроси">ЧЗБ</a></li>
         <li><a href="#visit">Контакти</a></li>
       </ul>
     </nav>
@@ -1355,14 +1501,46 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
      HERO
      ============================================================ -->
 <section class="hero" aria-label="Начална секция">
-  <!-- No `autoplay` attribute: playback is started from JS after load, so the
-       poster (the LCP element) is never competing with 2.7MB of video, and so
-       reduced-motion users get a still image instead. -->
-  <video class="hero-video" id="hero-video" muted loop playsinline preload="none"
+  <!-- `media` on a <source> inside <video> is honoured by no current browser —
+       Chrome dropped it in v45, Firefox and Safari never shipped it, and it
+       only ever worked inside <picture>. The two-source switch that used to sit
+       here therefore did nothing except hand the 768px file to desktop as well.
+       The small file is the markup default so a scriptless visitor still gets
+       the cheap one, and the script below is the single place the source is
+       chosen.
+
+       `autoplay` is declared rather than left to a JS play() on window.load.
+       The declarative path is the one mobile Safari actually optimises for, and
+       waiting for `load` meant the element had not so much as picked a source
+       until every other asset on the page had finished — which is why phones
+       sat on a still poster. Reduced motion strips the attribute below, before
+       any fetch starts, so those visitors keep the poster deliberately. -->
+  <video class="hero-video" id="hero-video" autoplay muted loop playsinline
+         preload="metadata" disablepictureinpicture
          aria-hidden="true" poster="images/hero-poster-900.webp">
-    <source src="media/hero-768.mp4" type="video/mp4" media="(max-width: 768px)">
-    <source src="media/hero-1280.mp4" type="video/mp4">
+    <source src="media/hero-768.mp4" type="video/mp4">
   </video>
+  <script>
+  /* Inline and immediately after the element so both decisions land before the
+     browser begins fetching, rather than after load like the old handler. */
+  (function () {
+    var v = document.getElementById('hero-video');
+    if (!v) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      v.removeAttribute('autoplay');
+      return;
+    }
+    if (window.matchMedia('(min-width: 769px)').matches) v.src = 'media/hero-1280.mp4';
+    v.addEventListener('playing', function () { v.classList.add('is-playing'); }, { once: true });
+    var kick = function () { if (v.paused) v.play().catch(function () {}); };
+    kick();
+    /* iOS Low Power Mode refuses autoplay outright but still allows play()
+       inside a gesture, so the first touch anywhere on the page rescues it. */
+    ['touchstart', 'click'].forEach(function (evt) {
+      document.addEventListener(evt, kick, { once: true, passive: true });
+    });
+  })();
+  </script>
   <div class="hero-overlay" aria-hidden="true"></div>
   <div class="hero-panel active" aria-hidden="false">
     <span class="slide-tagline">Специализиран Магазин · Пловдив</span>
@@ -1406,7 +1584,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
      STATS BAR
      ============================================================ -->
 <section class="stats-bar" aria-label="Факти и статистики">
-  <div class="stats-container">
+  <div class="stats-container" data-reveal-group>
     <div class="stat-item reveal">
       <div class="stat-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1439,11 +1617,17 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
     <div class="stat-divider" aria-hidden="true"></div>
     <div class="stat-item reveal reveal-delay-2">
       <div class="stat-icon" aria-hidden="true">
+        <!-- A milk can: the producer's own vessel, and the one dairy object
+             that is unmistakable at 22px. It repeats neither the drop above it
+             nor the barn beside it, which a farm-with-arrow would have. Drawn
+             to the siblings' conventions — 24x24 box, 1.5 stroke, round joins —
+             and sized to 13x18 units on the same centre, so all three icons
+             read at one optical weight rather than one looking larger for
+             having a wider path. -->
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="4" cy="12" r="2"/>
-          <path d="M7 12h10"/>
-          <path d="M14.5 8.5L18 12l-3.5 3.5"/>
-          <circle cx="20.5" cy="12" r="1.2" opacity="0.45"/>
+          <path d="M9 3h6"/>
+          <path d="M9.6 3.2v2.4c0 1-.4 1.6-1.2 2.3C6.6 9.3 5.5 10.7 5.5 12.6V19.5a1.8 1.8 0 0 0 1.8 1.8h9.4a1.8 1.8 0 0 0 1.8-1.8V12.6c0-1.9-1.1-3.3-2.9-4.7-.8-.7-1.2-1.3-1.2-2.3V3.2"/>
+          <path d="M5.7 13.6h12.6" opacity="0.45"/>
         </svg>
       </div>
       <span class="stat-number">Директно</span>
@@ -1476,7 +1660,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
         </div>
       </div>
     </div>
-    <div class="about-text">
+    <div class="about-text" data-reveal-group>
       <span class="eyebrow reveal">За Нас</span>
       <h2 class="reveal reveal-delay-1">Пресен продукт,<br>директно от производителя.</h2>
       <p class="reveal reveal-delay-2 about-text-desktop">Млечко работи от 2010 година с едно убеждение: качествената храна не трябва да бъде лукс. Всяка седмица пресни млечни продукти, яйца и маслини пристигат директно от проверени производители, без посредници и надценки.</p>
@@ -1513,7 +1697,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
      PRODUCT CATEGORIES
      ============================================================ -->
 <section class="section-categories" id="categories" aria-label="Продуктови категории">
-  <div class="section-header">
+  <div class="section-header" data-reveal-group>
     <span class="eyebrow reveal">Нашите Продукти</span>
     <h2 class="reveal reveal-delay-1">Всичко прясно. Всичко избрано.</h2>
     <p class="reveal reveal-delay-2">Млечни продукти, пресни яйца и деликатеси, доставени прясно всяка седмица.</p>
@@ -1576,8 +1760,8 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
      FEATURED PRODUCTS
      ============================================================ -->
 <section class="section-feature bg-cream" id="dairy-feature" aria-label="Млечни продукти">
-  <div class="feature-inner">
-    <div class="feature-image reveal">
+  <div class="feature-inner" data-reveal-group>
+    <div class="feature-image reveal-img" data-reveal-order="99">
       <picture><source type="image/avif" srcset="images/feat-dairy-600.avif 600w, images/feat-dairy-1200.avif 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 564px"><img src="images/feat-dairy-1200.webp" srcset="images/feat-dairy-600.webp 600w, images/feat-dairy-1200.webp 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 564px" width="1200" height="800" alt="Разнообразие от млечни продукти" loading="lazy" decoding="async"></picture>
     </div>
     <div class="feature-text">
@@ -1603,8 +1787,8 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 </div>
 
 <section class="section-feature bg-mist" id="eggs-feature" aria-label="Яйца">
-  <div class="feature-inner flipped">
-    <div class="feature-image reveal">
+  <div class="feature-inner flipped" data-reveal-group>
+    <div class="feature-image reveal-img" data-reveal-order="99">
       <picture><source type="image/avif" srcset="images/feat-eggs-600.avif 600w, images/feat-eggs-1200.avif 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 564px"><img src="images/feat-eggs-1200.webp" srcset="images/feat-eggs-600.webp 600w, images/feat-eggs-1200.webp 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 564px" width="1200" height="1200" alt="Пресни яйца от ферма" loading="lazy" decoding="async"></picture>
     </div>
     <div class="feature-text">
@@ -1630,8 +1814,8 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 </div>
 
 <section class="section-feature bg-cream has-wave" id="olives-feature" aria-label="Маслини и деликатеси">
-  <div class="feature-inner">
-    <div class="feature-image reveal">
+  <div class="feature-inner" data-reveal-group>
+    <div class="feature-image reveal-img" data-reveal-order="99">
       <picture><source type="image/avif" srcset="images/feat-olives-600.avif 600w, images/feat-olives-1200.avif 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 564px"><img src="images/feat-olives-1200.webp" srcset="images/feat-olives-600.webp 600w, images/feat-olives-1200.webp 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 564px" width="1200" height="1200" alt="Маслини и деликатеси" loading="lazy" decoding="async"></picture>
     </div>
     <div class="feature-text">
@@ -1661,42 +1845,75 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 
 <!-- ============================================================
      STORE SHOWCASE
-     Real photography only: the wide shot is the shop's own interior photo,
-     the three details are stills lifted from the shop's own walkthrough
-     footage. Every tile ships 16:9 and is cropped by CSS per breakpoint, so
-     one master serves every layout and no crop is guessed at build time.
+     Products only: every frame is stock on a counter or behind a fridge door,
+     no room shots. The establishing tile is the cheese counter rather than the
+     old interior photo, which showed the aisle instead of what is in it.
+     Orientation drives the layout — see the grid rules in the stylesheet.
      ============================================================ -->
 <section class="section-store" id="store" aria-label="Нашият магазин">
-  <div class="section-header">
+  <div class="section-header" data-reveal-group>
     <span class="eyebrow reveal">Нашият Магазин</span>
-    <h2 class="reveal reveal-delay-1">Разгледайте магазина отблизо</h2>
-    <p class="reveal reveal-delay-2">Витрините, рафтовете и щандовете такива, каквито ще ги видите на Пещерско шосе 26.</p>
+    <h2 class="reveal">Разгледайте магазина отблизо</h2>
+    <p class="reveal">Витрините, рафтовете и щандовете такива, каквито ще ги видите на <br class="br-desktop"><span class="nb">Пещерско шосе 26.</span></p>
   </div>
-  <div class="store-grid">
-    <figure class="store-tile store-tile--wide reveal">
+  <div class="store-gallery">
+    <div class="store-grid" id="store-grid"
+         role="group" aria-roledescription="галерия" aria-label="Снимки от магазина">
+    <figure class="store-tile store-tile--wide reveal-img">
       <picture>
-        <source type="image/avif" srcset="images/store-interior-600.avif 600w, images/store-interior-1200.avif 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 787px">
-        <img src="images/store-interior-1200.webp" srcset="images/store-interior-600.webp 600w, images/store-interior-1200.webp 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 787px" width="1200" height="675" alt="Интериорът на магазин Млечко: рафтове с пакетирани продукти, хладилна витрина и щанд с млечни продукти и маслини" loading="lazy" decoding="async">
+        <source type="image/avif" srcset="images/store-kashkaval-600.avif 600w, images/store-kashkaval-1200.avif 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 1200px">
+        <img src="images/store-kashkaval-1200.webp" srcset="images/store-kashkaval-600.webp 600w, images/store-kashkaval-1200.webp 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 1200px" width="1200" height="676" alt="Витрина с жълти сирена и кашкавали на цели пити и блокове, с етикети с цени" loading="lazy" decoding="async">
       </picture>
     </figure>
-    <figure class="store-tile reveal reveal-delay-1">
+    <figure class="store-tile store-tile--land reveal-img">
       <picture>
-        <source type="image/avif" srcset="images/store-cheese-400.avif 400w, images/store-cheese-800.avif 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 108px) / 2), 393px">
-        <img src="images/store-cheese-800.webp" srcset="images/store-cheese-400.webp 400w, images/store-cheese-800.webp 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 108px) / 2), 393px" width="800" height="450" alt="Витрина с жълти сирена и кашкавали, подредени с етикети с цени" loading="lazy" decoding="async">
+        <source type="image/avif" srcset="images/store-sirene-600.avif 600w, images/store-sirene-1200.avif 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 590px">
+        <img src="images/store-sirene-1200.webp" srcset="images/store-sirene-600.webp 600w, images/store-sirene-1200.webp 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 590px" width="1200" height="553" alt="Витрина с бяло саламурено сирене, извара и кисело мляко в тави" loading="lazy" decoding="async">
       </picture>
     </figure>
-    <figure class="store-tile reveal reveal-delay-2">
+    <figure class="store-tile store-tile--land reveal-img">
       <picture>
-        <source type="image/avif" srcset="images/store-olives-400.avif 400w, images/store-olives-800.avif 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 108px) / 2), 393px">
-        <img src="images/store-olives-800.webp" srcset="images/store-olives-400.webp 400w, images/store-olives-800.webp 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 108px) / 2), 393px" width="800" height="450" alt="Щанд с маслини в тави: каламата, гемлик, услу и стафидари, с ръчно написани табелки" loading="lazy" decoding="async">
+        <source type="image/avif" srcset="images/store-olives-400.avif 400w, images/store-olives-800.avif 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 590px">
+        <img src="images/store-olives-800.webp" srcset="images/store-olives-400.webp 400w, images/store-olives-800.webp 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 590px" width="800" height="450" alt="Щанд с маслини в тави: каламата, гемлик, услу и стафидари, с ръчно написани табелки" loading="lazy" decoding="async">
       </picture>
     </figure>
-    <figure class="store-tile reveal reveal-delay-3">
+    <figure class="store-tile store-tile--port reveal-img">
       <picture>
-        <source type="image/avif" srcset="images/store-sirene-400.avif 400w, images/store-sirene-800.avif 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 108px) / 2), 393px">
-        <img src="images/store-sirene-800.webp" srcset="images/store-sirene-400.webp 400w, images/store-sirene-800.webp 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 108px) / 2), 393px" width="800" height="450" alt="Витрина с бяло саламурено сирене от краве, овче и козе мляко на блокове" loading="lazy" decoding="async">
+        <source type="image/avif" srcset="images/store-milk-400.avif 400w, images/store-milk-800.avif 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 112px) / 2), 285px">
+        <img src="images/store-milk-800.webp" srcset="images/store-milk-400.webp 400w, images/store-milk-800.webp 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 112px) / 2), 285px" width="800" height="1730" alt="Хладилник с прясно мляко в бутилки, кисело мляко и сметана" loading="lazy" decoding="async">
       </picture>
     </figure>
+    <figure class="store-tile store-tile--port reveal-img">
+      <picture>
+        <source type="image/avif" srcset="images/store-eggs-423.avif">
+        <img src="images/store-eggs-423.webp" width="423" height="947" alt="Хладилник с пресни яйца в кори и опаковки" loading="lazy" decoding="async">
+      </picture>
+    </figure>
+    <figure class="store-tile store-tile--port reveal-img">
+      <picture>
+        <source type="image/avif" srcset="images/store-yogurt-423.avif">
+        <img src="images/store-yogurt-423.webp" width="423" height="887" alt="Хладилник с кисело мляко и млечни продукти в кофички" loading="lazy" decoding="async">
+      </picture>
+    </figure>
+    <figure class="store-tile store-tile--port reveal-img">
+      <picture>
+        <source type="image/avif" srcset="images/store-packaged-423.avif">
+        <img src="images/store-packaged-423.webp" width="423" height="887" alt="Хладилник с пакетирани сирена и кашкавали" loading="lazy" decoding="async">
+      </picture>
+    </figure>
+    </div>
+    <!-- Mobile only; display:none on wider screens takes it out of the
+         accessibility tree along with the layout. -->
+    <div class="store-nav">
+      <button class="store-arrow" id="store-prev" type="button" aria-label="Предишна снимка">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="store-dots" id="store-dots"></div>
+      <button class="store-arrow" id="store-next" type="button" aria-label="Следваща снимка">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+    <p class="visually-hidden" id="store-status" role="status" aria-live="polite"></p>
   </div>
   <div class="wave-divider" aria-hidden="true">
     <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -1709,7 +1926,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
      TESTIMONIALS
      ============================================================ -->
 <section class="section-testimonials" id="testimonials" aria-label="Отзиви от клиенти">
-  <div class="testimonials-header">
+  <div class="testimonials-header" data-reveal-group>
     <span class="eyebrow reveal">Отзиви</span>
     <h2 class="reveal">Думите на нашите клиенти</h2>
     <p class="testimonials-sub reveal">Истински мнения от клиенти, които се връщат при нас седмица след седмица.</p>
@@ -1734,7 +1951,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   </div>
   <div class="wave-divider" aria-hidden="true">
     <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0,35 C480,70 960,0 1440,35 L1440,70 L0,70 Z" fill="#ffffff"/>
+      <path d="M0,35 C480,70 960,0 1440,35 L1440,70 L0,70 Z" fill="#F4F1EC"/>
     </svg>
   </div>
 </section>
@@ -1743,12 +1960,12 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
      FAQ
      ============================================================ -->
 <section class="section-faq" id="faq" aria-label="Често задавани въпроси">
-  <div class="section-header">
+  <div class="section-header" data-reveal-group>
     <span class="eyebrow reveal">Въпроси</span>
     <h2 class="reveal reveal-delay-1">Често задавани въпроси</h2>
     <p class="reveal reveal-delay-2">Най-честите неща, които ни питат клиентите.</p>
   </div>
-  <div class="faq-list">
+  <div class="faq-list" data-reveal-group>
     <details class="faq-item faq-reveal">
       <summary>Къде се намира магазин Млечко?</summary>
       <p>На бул. Пещерско шосе 26, кв. Младежки хълм, Пловдив.</p>
@@ -1781,7 +1998,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
      ============================================================ -->
 <section class="section-visit" id="visit" aria-label="Намерете ни">
   <div class="visit-inner">
-    <div class="visit-info">
+    <div class="visit-info" data-reveal-group>
       <span class="eyebrow reveal">Намерете Ни</span>
       <h2 class="reveal reveal-delay-1">Елате при нас в Пловдив</h2>
       <div class="info-blocks">
@@ -1949,71 +2166,130 @@ document.addEventListener('click', e => {
 /* ============================================================
    SCROLL REVEAL
    ============================================================ */
-/* Everything that crosses the trigger line in one scroll tick arrives in a
-   single `entries` array. That array is "the group that entered together", so
-   we group it by section, order each group by RENDERED position, and hand out
-   an incremental delay.
+/* Two observers, and only two.
 
-   Sorting on boundingClientRect.top (supplied by the observer, so no forced
-   reflow) is what makes this correct: it automatically respects every CSS
-   `order:` flip and the `align-items: center` column offset, neither of which
-   DOM order or a static delay class can see. An element that crosses alone
-   gets index 0 and therefore no delay at all. */
-const REVEAL_STEP = 65;   /* ms between siblings inside one group */
-const REVEAL_CAP  = 325;  /* ms — ceiling on stagger, so no group drags */
+   The GROUP observer is the one that gives a section a deliberate order. It
+   watches a block — a .section-header, the about copy, a feature's text column
+   — and when that block crosses, reveals its members in DOM order, which is
+   authored order: eyebrow, then heading, then copy, then the CTA. One trigger,
+   one stagger.
+
+   The ELEMENT observer handles everything outside a group and keeps the old
+   batching rule: whatever crosses the line in a single tick is one batch,
+   ordered by RENDERED position. Sorting on boundingClientRect.top (handed to us
+   by the observer, so no forced reflow) is what makes that correct — it
+   respects every CSS `order:` flip and the align-items offsets, neither of
+   which DOM order can see.
+
+   The reason the group observer had to exist: on its own, the element observer
+   derives stagger from the batch, so anything crossing the line alone won index
+   0 and therefore no delay at all. On a phone almost everything crosses alone,
+   which is exactly why the page used to reveal flat. The FAQ list had already
+   been given a private one-trigger observer for this reason; this generalises
+   that fix instead of keeping a second mechanism beside it.
+
+   Card GRIDS are deliberately not groups. A single trigger at the top of a tall
+   grid would reveal cards still far below the fold — the same "all at once"
+   failure, just earlier. Those stay with the element observer, one card at a
+   time as each arrives. */
+const REVEAL_SEL  = '.reveal, .reveal-img, .faq-reveal';
+const REVEAL_STEP = 70;    /* ms between siblings inside one group */
+const REVEAL_CAP  = 350;   /* ms — ceiling on stagger, so no group drags */
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-const revealObs = new IntersectionObserver(entries => {
-  const groups = new Map();
+function showReveal(el, delay) {
+  el.style.transitionDelay = delay + 'ms';
+  el.style.willChange = 'opacity, transform';
+  el.classList.add('visible');
+  /* will-change is granted here rather than in the stylesheet and handed back
+     afterwards, so ~60 elements are never all promoted to their own layer. */
+  setTimeout(() => { el.style.willChange = 'auto'; }, delay + 800);
+}
+
+function revealDelay(i) {
+  return reduceMotion.matches ? 0 : Math.min(i * REVEAL_STEP, REVEAL_CAP);
+}
+
+const elementObs = new IntersectionObserver(entries => {
+  const batches = new Map();
   for (const e of entries) {
     if (!e.isIntersecting) continue;
     const section = e.target.closest('section, footer') || document.body;
-    if (!groups.has(section)) groups.set(section, []);
-    groups.get(section).push(e);
+    if (!batches.has(section)) batches.set(section, []);
+    batches.get(section).push(e);
   }
-  for (const group of groups.values()) {
-    group.sort((a, b) =>
+  for (const batch of batches.values()) {
+    batch.sort((a, b) =>
       (a.boundingClientRect.top  - b.boundingClientRect.top) ||
       (a.boundingClientRect.left - b.boundingClientRect.left));
-    group.forEach((e, i) => {
-      const el = e.target;
-      const delay = reduceMotion.matches ? 0 : Math.min(i * REVEAL_STEP, REVEAL_CAP);
-      el.style.transitionDelay = delay + 'ms';
-      el.style.willChange = 'opacity, transform';
-      el.classList.add('visible');
-      revealObs.unobserve(el);
-      setTimeout(() => { el.style.willChange = 'auto'; }, delay + 700);
+    batch.forEach((e, i) => {
+      elementObs.unobserve(e.target);
+      showReveal(e.target, revealDelay(i));
     });
   }
 }, { threshold: 0, rootMargin: '0px 0px -12% 0px' });
-document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
-if (navigator.webdriver) document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
 
-/* FAQ rows are revealed by THIS observer and nothing else — they carry
-   .faq-reveal, not .reveal, so the observer above never sees them and cannot
-   race it. The trigger is the list, not the rows: a vertical list crosses the
-   trigger line one row at a time, which is exactly why the shared observer's
-   batch-derived stagger collapsed to zero here. One trigger, one stagger. */
-const faqList = document.querySelector('.faq-list');
-if (faqList) {
-  const faqObs = new IntersectionObserver((entries, obs) => {
-    for (const e of entries) {
-      if (!e.isIntersecting) continue;
-      obs.unobserve(e.target);
-      e.target.querySelectorAll('.faq-reveal').forEach((row, i) => {
-        row.style.transitionDelay = (reduceMotion.matches ? 0 : i * 80) + 'ms';
-        row.classList.add('visible');
+const groupObs = new IntersectionObserver((entries, obs) => {
+  for (const e of entries) {
+    if (!e.isIntersecting) continue;
+    obs.unobserve(e.target);
+    /* DOM order by default. data-reveal-order overrides it where the markup
+       order is not the order the eye should get things in — the feature rows
+       put the photograph next to the copy in the source and flip its side with
+       CSS `order`, and it should land last either way. */
+    const members = Array.from(e.target.querySelectorAll(REVEAL_SEL));
+    members
+      .map((el, i) => ({ el, k: Number(el.dataset.revealOrder) || i }))
+      .sort((a, b) => a.k - b.k)
+      .forEach(({ el }, i) => {
+        /* Belt and braces: a member should never have been handed to the
+           element observer, but if one is, drop it there first so the two can
+           never both write transitionDelay on the same node. */
+        elementObs.unobserve(el);
+        showReveal(el, revealDelay(i));
       });
-    }
-  }, { threshold: 0, rootMargin: '0px 0px -10% 0px' });
-  faqObs.observe(faqList);
-  if (navigator.webdriver) faqList.querySelectorAll('.faq-reveal').forEach(r => r.classList.add('visible'));
+  }
+}, { threshold: 0, rootMargin: '0px 0px -12% 0px' });
+
+document.querySelectorAll('[data-reveal-group]').forEach(el => groupObs.observe(el));
+document.querySelectorAll(REVEAL_SEL).forEach(el => {
+  if (!el.closest('[data-reveal-group]')) elementObs.observe(el);
+});
+if (navigator.webdriver) document.querySelectorAll(REVEAL_SEL).forEach(el => el.classList.add('visible'));
+
+/* The trigger line sits 12% up from the bottom of the viewport, which is what
+   makes a reveal fire as an element arrives rather than as it clips the edge.
+   The cost is that an element which comes to rest inside that bottom 12% at the
+   very END of the document can never cross it — there is no more scroll left to
+   give. On a phone that stranded the last few footer rows at opacity 0, which is
+   the one outcome this system is not allowed to produce. So: once the document
+   is scrolled to its end, anything still hidden is shown outright. */
+let revealFlushed = false;
+function flushReveals() {
+  if (revealFlushed) return;
+  if (window.innerHeight + window.scrollY <
+      document.documentElement.scrollHeight - 2) return;
+  document.querySelectorAll(REVEAL_SEL).forEach(el => {
+    if (!el.classList.contains('visible')) showReveal(el, 0);
+  });
+  revealFlushed = true;
 }
+window.addEventListener('scroll', flushReveals, { passive: true });
+
+/* A rotate or a window resize can leave an element that was below the fold
+   sitting above it without ever having crossed. Only strays need re-observing;
+   a group that has fired has already revealed everything inside it. */
 let _revealResizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(_revealResizeTimer);
+  revealFlushed = false;
   _revealResizeTimer = setTimeout(() => {
-    document.querySelectorAll('.reveal:not(.visible)').forEach(el => revealObs.observe(el));
+    document.querySelectorAll(REVEAL_SEL).forEach(el => {
+      if (el.classList.contains('visible')) return;
+      if (el.closest('[data-reveal-group]')) return;
+      elementObs.observe(el);
+    });
+    flushReveals();
   }, 200);
 }, { passive: true });
 
@@ -2140,14 +2416,10 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) clear
 heroPanels.forEach((p, idx) => { p.inert = idx !== hIdx; });
 startHero();
 
-/* Video starts only after the page has loaded, and never under reduced
-   motion. The poster carries the hero until then. */
-const heroVideo = document.getElementById('hero-video');
-if (heroVideo && !reduceMotion.matches) {
-  const playHero = () => { heroVideo.play().catch(() => {}); };
-  if (document.readyState === 'complete') playHero();
-  else window.addEventListener('load', playHero, { once: true });
-}
+/* The hero video is started by the inline script beside the element itself,
+   not from here. Waiting for `load` meant the element had not even selected a
+   source until the rest of the page had finished downloading, which on a phone
+   is the difference between a video and a still poster. */
 
 /* ============================================================
    TESTIMONIALS CAROUSEL
@@ -2345,6 +2617,98 @@ window.addEventListener('resize', () => {
   const logical = ((cIdx - cloneCount) % TESTIMONIALS.length + TESTIMONIALS.length) % TESTIMONIALS.length;
   clearCauto(); buildCarousel(logical); startCauto();
 });
+
+/* ============================================================
+   STORE GALLERY — MOBILE CAROUSEL
+   ============================================================ */
+/* Scroll-snap, not a transform track. The browser already handles momentum,
+   snapping and swipe correctly, so the arrows only have to call scrollTo —
+   there are no clones, no wrap bookkeeping and nothing that can desync. It also
+   degrades honestly: with this script gone the strip is still swipeable, which
+   a transform track is not.
+
+   Deliberately does NOT wrap. The reviews carousel loops because it advances
+   itself and a loop is the only sensible end; a photo gallery the visitor is
+   driving by hand should run out at the last photograph rather than silently
+   returning to the first. The arrows disable at the ends to say so.
+
+   Desktop runs all of this too, harmlessly: the grid does not overflow there,
+   so scrollLeft stays 0, and .store-nav is display:none. */
+const storeGrid = document.getElementById('store-grid');
+if (storeGrid) {
+  const storeDots   = document.getElementById('store-dots');
+  const storeStatus = document.getElementById('store-status');
+  const storePrev   = document.getElementById('store-prev');
+  const storeNext   = document.getElementById('store-next');
+  const storeTiles  = Array.from(storeGrid.querySelectorAll('.store-tile'));
+  const storeN      = storeTiles.length;
+
+  const storeBehavior = () => (reduceMotion.matches ? 'auto' : 'smooth');
+
+  /* Measured, not computed from an assumed tile width: the tiles are not all
+     the same element type and the gap is a CSS value this file should not have
+     to know twice. */
+  function tileOffset(i) {
+    return storeTiles[i].getBoundingClientRect().left
+         - storeGrid.getBoundingClientRect().left
+         + storeGrid.scrollLeft;
+  }
+
+  /* Nearest tile to the current position, rather than round(scrollLeft/width).
+     Rubber-banding at either end puts scrollLeft outside the real range, and
+     the division answer is wrong exactly there. */
+  function storeIndex() {
+    let best = 0, bestD = Infinity;
+    for (let i = 0; i < storeN; i++) {
+      const d = Math.abs(tileOffset(i) - storeGrid.scrollLeft);
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    return best;
+  }
+
+  function goStore(i) {
+    const n = Math.min(storeN - 1, Math.max(0, i));
+    storeGrid.scrollTo({ left: tileOffset(n), behavior: storeBehavior() });
+  }
+
+  for (let i = 0; i < storeN; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'store-dot';
+    dot.type = 'button';
+    dot.setAttribute('aria-label', `Снимка ${i + 1} от ${storeN}`);
+    dot.addEventListener('click', () => goStore(i));
+    storeDots.appendChild(dot);
+  }
+
+  function syncStore() {
+    const i = storeIndex();
+    Array.from(storeDots.children).forEach((dot, n) => {
+      dot.classList.toggle('is-current', n === i);
+      dot.setAttribute('aria-current', n === i ? 'true' : 'false');
+    });
+    const maxScroll = storeGrid.scrollWidth - storeGrid.clientWidth;
+    storePrev.disabled = storeGrid.scrollLeft <= 1;
+    storeNext.disabled = storeGrid.scrollLeft >= maxScroll - 1;
+    storeStatus.textContent = `Снимка ${i + 1} от ${storeN}`;
+  }
+
+  storePrev.addEventListener('click', () => goStore(storeIndex() - 1));
+  storeNext.addEventListener('click', () => goStore(storeIndex() + 1));
+
+  /* Debounced: scroll fires continuously through a swipe, and the dots only
+     need the answer once it settles. */
+  let storeTick;
+  storeGrid.addEventListener('scroll', () => {
+    clearTimeout(storeTick);
+    storeTick = setTimeout(syncStore, 90);
+  }, { passive: true });
+  window.addEventListener('resize', () => {
+    clearTimeout(storeTick);
+    storeTick = setTimeout(syncStore, 200);
+  }, { passive: true });
+
+  syncStore();
+}
 
 </script>
 
