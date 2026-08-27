@@ -4,23 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#2C3E50">
-  <meta name="description" content="Специализиран магазин в Пловдив с над 30 вида пресни млечни продукти, яйца и маслини. Доставка всяка сутрин директно от производителите. Пещерско шосе 26.">
+  <meta name="description" content="Специализиран магазин в Пловдив с над 100 вида пресни млечни продукти, яйца и маслини. Седмични доставки директно от производителите. Пещерско шосе 26.">
   <meta property="og:title" content="Млечко — Пресни Млечни Продукти, Яйца и Маслини · Пловдив">
-  <meta property="og:description" content="Пресни млечни продукти, яйца и маслини. Доставка всяка сутрин директно от производителите.">
-  <meta property="og:image" content="https://mlechko.bg/Enhanced%20images/HomePage%20Header.png">
-  <meta property="og:image:width" content="1672">
-  <meta property="og:image:height" content="941">
+  <meta property="og:description" content="Пресни млечни продукти, яйца и маслини. Седмични доставки директно от производителите.">
+  <meta property="og:image" content="https://www.mlechko-magazin.com/images/og-cover.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="675">
   <meta property="og:image:alt" content="Млечко — специализиран магазин в Пловдив">
   <meta property="og:site_name" content="Млечко">
   <meta property="og:type" content="business.business">
   <meta property="og:locale" content="bg_BG">
-  <meta property="og:url" content="https://mlechko.bg">
+  <meta property="og:url" content="https://www.mlechko-magazin.com">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Млечко — Пресни Млечни, Яйца и Маслини · Пловдив">
-  <meta name="twitter:description" content="Специализиран магазин с над 30 вида пресни продукти. Доставка всяка сутрин от производителите. Пловдив, Пещерско шосе 26.">
-  <meta name="twitter:image" content="https://mlechko.bg/Enhanced%20images/HomePage%20Header.png">
+  <meta name="twitter:description" content="Специализиран магазин с над 100 вида пресни продукти. Седмични доставки от производителите. Пловдив, Пещерско шосе 26.">
+  <meta name="twitter:image" content="https://www.mlechko-magazin.com/images/og-cover.jpg">
   <meta name="twitter:image:alt" content="Млечко — специализиран магазин в Пловдив">
-  <link rel="canonical" href="https://mlechko.bg">
+  <link rel="preload" as="image" href="images/hero-poster-900.webp" fetchpriority="high">
+  <link rel="canonical" href="https://www.mlechko-magazin.com">
   <title>Млечко — Пресни Млечни, Яйца и Маслини · Пловдив</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -173,7 +174,14 @@
    RESET & BASE
    ============================================================ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; font-size: 16px; background: #111120; }
+/* No `scroll-behavior: smooth` here on purpose. smoothScrollTo() animates with
+   its own rAF loop, and CSS smooth scrolling would turn every one of those
+   frames into a nested smooth animation, compounding into a mushy scroll. */
+html { font-size: 16px; background: #111120; }
+/* Keeps anchor targets and focused elements clear of the fixed header
+   (WCAG 2.2 — 2.4.11 Focus Not Obscured). */
+:target, [id] { scroll-margin-top: 96px; }
+@media (max-width: 768px) { :target, [id] { scroll-margin-top: 80px; } }
 body {
   font-family: var(--font-sans);
   color: var(--color-slate-mid);
@@ -183,6 +191,7 @@ body {
   overflow-x: hidden;
 }
 img { max-width: 100%; display: block; }
+picture { display: contents; }
 a { color: inherit; text-decoration: none; }
 button { cursor: pointer; border: none; background: none; font-family: inherit; }
 h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
@@ -190,11 +199,13 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 /* ============================================================
    SCROLL REVEAL
    ============================================================ */
+/* Duration and travel are deliberately restrained: the stagger does the work,
+   not the distance. will-change is applied at intersection time, not here, so
+   ~60 elements are not promoted to their own layer on page load. */
 .reveal {
   opacity: 0;
-  transform: translateY(30px);
-  will-change: opacity, transform;
-  transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1);
+  transform: translateY(18px);
+  transition: opacity 0.42s cubic-bezier(0.16,1,0.3,1), transform 0.42s cubic-bezier(0.16,1,0.3,1);
 }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 .reveal-delay-1 { transition-delay: 0.1s; }
@@ -275,7 +286,16 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   position: absolute; left: 50%;
   transform: translate(-50%, -50%);
   top: 50%;
+  /* Absolutely positioned at left:50%, so shrink-to-fit clamps the width to
+     the remaining half of the bar — 650px here. Five short labels fitted; six
+     longer ones wrapped to two lines instead. nowrap lets the row take its
+     max-content width and overflow evenly on both sides, which translateX
+     already centres. */
+  white-space: nowrap;
 }
+/* Full wording by default; the short form only where measurement showed the
+   six-item row colliding with the logo and the CTA (roughly 1025-1250px). */
+.nav-label-short { display: none; }
 .nav-links a {
   font-size: 0.85rem; font-weight: 500; letter-spacing: 0.04em;
   color: var(--color-slate-deep);
@@ -311,6 +331,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   outline-offset: 3px;
 }
 .nav-cta:active { transform: translateY(0); box-shadow: none; }
+.nav-call { display: none; }
 .nav-hamburger {
   display: none; flex-direction: column; gap: 5px; padding: 6px; cursor: pointer;
 }
@@ -339,7 +360,10 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   border-bottom: 1px solid rgba(255,255,255,0.07);
 }
 .mobile-nav-logo img { width: 120px; height: auto; opacity: 0.9; }
-.mobile-nav-body { flex: 1; overflow-y: hidden; }
+/* auto, not hidden: on short viewports the links + slogan + socials +
+   address + hours exceed the flex space and the lower half became
+   unreachable rather than scrollable. */
+.mobile-nav-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .mobile-nav-links {
   list-style: none; width: 100%; padding: 8px 0;
   display: flex; flex-direction: column; gap: 0;
@@ -354,6 +378,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 .mobile-nav.open .mobile-nav-links li:nth-child(3) { opacity:1; transform:none; transition-delay:0.18s; }
 .mobile-nav.open .mobile-nav-links li:nth-child(4) { opacity:1; transform:none; transition-delay:0.24s; }
 .mobile-nav.open .mobile-nav-links li:nth-child(5) { opacity:1; transform:none; transition-delay:0.30s; }
+.mobile-nav.open .mobile-nav-links li:nth-child(6) { opacity:1; transform:none; transition-delay:0.36s; }
 .mobile-nav-links a {
   font-size: 1.25rem; font-weight: 500; color: rgba(255,255,255,0.88);
   display: flex; align-items: center;
@@ -460,7 +485,12 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   text-transform: uppercase; color: var(--color-sage-light);
   display: block; margin-bottom: 22px;
 }
-.hero-panel h1 {
+/* Slides 2 and 3 use .hero-title (a <p>) rather than <h1>: three <h1>
+   elements in one document is an ambiguous outline, and only one slide can
+   legitimately be the page's top heading. Styling is identical. */
+.hero-panel h1,
+.hero-panel .hero-title {
+  font-family: var(--font-display);
   font-size: clamp(2.6rem, 5.5vw, 5rem); font-weight: 700;
   color: #fff; line-height: 1.1; letter-spacing: -0.03em;
   margin-bottom: 24px; max-width: 900px;
@@ -499,7 +529,8 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 .hero-panel.active .slide-tagline {
   animation: heroSlideLeft 0.85s cubic-bezier(0.16,1,0.3,1) 0.2s both;
 }
-.hero-panel.active h1 {
+.hero-panel.active h1,
+.hero-panel.active .hero-title {
   animation: heroSlideUp 1s cubic-bezier(0.16,1,0.3,1) 0.45s both;
 }
 .hero-panel.active .slide-sub {
@@ -522,24 +553,6 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 }
 .hero-wave-wrap { position: absolute; bottom: -1px; left: 0; right: 0; z-index: 3; line-height: 0; }
 .hero-wave-wrap svg { display: block; width: 100%; height: 70px; }
-.hero-dots {
-  position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 4px; z-index: 10;
-}
-.hero-dot {
-  width: 24px; height: 24px; border-radius: 50%; border: none;
-  background: transparent; cursor: pointer; padding: 0;
-  display: flex; align-items: center; justify-content: center;
-}
-.hero-dot::before {
-  content: '';
-  width: 8px; height: 8px; border-radius: 50%;
-  background: rgba(255,255,255,0.35);
-  transition: background 0.3s ease, transform 0.3s ease;
-}
-.hero-dot.active::before { background: #fff; transform: scale(1.3); }
-.hero-dot:focus-visible { outline: 2px solid #fff; outline-offset: 2px; border-radius: 50%; }
-
 /* ============================================================
    STATS BAR
    ============================================================ */
@@ -702,9 +715,15 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 .feature-inner.flipped .feature-image { order: 2; }
 .feature-inner.flipped .feature-text  { order: 1; }
 .feature-image { border-radius: 8px; overflow: hidden; box-shadow: 0 16px 40px rgba(26,26,46,0.12); }
-.feature-image img { width: 100%; aspect-ratio: 4/3; object-fit: cover; transition: transform 0.6s ease; }
+/* height:auto is required, not cosmetic: the width/height attributes on the
+   <img> become a presentational `height` hint, and aspect-ratio only applies
+   when one axis is auto. Without this the images render at full intrinsic
+   height and the 4/3 crop is silently ignored. */
+.feature-image img { width: 100%; height: auto; aspect-ratio: 4/3; object-fit: cover; transition: transform 0.6s ease; }
 .feature-image:hover img { transform: scale(1.03); }
-.feature-text h3 {
+.feature-text h3,
+.feature-text .feature-title {
+  font-family: var(--font-display);
   font-size: clamp(1.2rem,2.5vw,1.8rem); font-weight: 500;
   color: var(--color-slate-deep); margin-bottom: 16px;
 }
@@ -713,6 +732,12 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 .feature-reasons li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.95rem; line-height: 1.5; }
 .feature-check { width: 18px; height: 18px; flex-shrink: 0; color: var(--color-sage-light); margin-top: 2px; }
 .feature-divider { max-width: 1200px; margin: 0 auto; height: 1px; background: var(--color-gold-light); opacity: 0.5; }
+/* A section that ends in a wave divider must carry no bottom padding, or the
+   wave floats above the section's real edge and leaves a band of the outgoing
+   background beneath it. Same construction as .section-about and
+   .section-categories, which pad their inner wrapper instead. */
+.section-feature.has-wave { padding-bottom: 0; }
+.section-feature.has-wave .feature-inner { padding-bottom: 100px; }
 .feature-trust-strip {
   display: flex; flex-direction: column; gap: 10px;
   margin-top: 2rem; padding-top: 1.5rem;
@@ -729,7 +754,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 /* ============================================================
    TESTIMONIALS
    ============================================================ */
-.section-testimonials { background: var(--color-charcoal); padding: 120px 0 0; position: relative; overflow: hidden; }
+.section-testimonials { background: var(--color-charcoal); padding: 120px 0 30px; position: relative; overflow: hidden; }
 .testimonials-header { text-align: center; padding: 0 60px; margin-bottom: 20px; }
 .testimonials-header .eyebrow { color: var(--color-gold); }
 .testimonials-header h2 { font-size: clamp(2rem,4vw,3.2rem); font-weight: 600; color: #fff; margin-bottom: 12px; }
@@ -762,6 +787,43 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 }
 .carousel-arrow--active {
   background: var(--color-gold); border-color: var(--color-gold); color: #fff;
+}
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+  white-space: nowrap; border: 0;
+}
+
+/* ============================================================
+   STORE SHOWCASE
+   Asymmetric on purpose: one large establishing shot of the room, three
+   narrow bands of the counters beside it. Every master ships 16:9 and each
+   tile crops it with object-fit, so the ratios below are free to differ per
+   breakpoint without a second set of files. aspect-ratio on the tile (not the
+   image) is what keeps the grid from shifting while the images load.
+   ============================================================ */
+.section-store { background: #F4F1EC; padding: 100px 80px 0; position: relative; }
+.section-store .eyebrow { color: #8a6a2e; }
+.store-grid {
+  max-width: 1200px; margin: 0 auto; padding-bottom: 100px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 20px;
+}
+.store-tile {
+  margin: 0; overflow: hidden;
+  border-radius: 10px;
+  aspect-ratio: 393 / 162;
+  box-shadow: 0 10px 30px rgba(26,26,46,0.10);
+  background: var(--color-mist);
+}
+.store-tile img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.6s ease; }
+.store-tile:hover img { transform: scale(1.04); }
+.store-tile--wide {
+  grid-column: 1; grid-row: 1 / 4;
+  aspect-ratio: auto;
+  box-shadow: 0 16px 40px rgba(26,26,46,0.13);
 }
 
 /* ============================================================
@@ -826,6 +888,11 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   cursor: pointer;
 }
 .faq-item summary::-webkit-details-marker { display: none; }
+/* The default mobile tap highlight paints the SUMMARY's box, which sits
+   inside the card's 24px horizontal padding — so the grey rectangle never
+   lined up with the card. Suppressed here only (not globally), and replaced
+   with feedback on .faq-item, which does span the card's full width. */
+.faq-item summary { -webkit-tap-highlight-color: transparent; }
 .faq-item summary::after {
   content: '';
   width: 9px; height: 9px; flex-shrink: 0;
@@ -840,15 +907,26 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 .faq-item p { padding-bottom: 22px; padding-right: 30px; color: var(--color-slate-mid); font-size: 0.95rem; line-height: 1.7; }
 .faq-item[open] p { animation: faqFadeIn 0.35s cubic-bezier(0.16,1,0.3,1); }
 @keyframes faqFadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (hover: none) {
+  .faq-item:active { background: #EFEAE1; }
+}
+/* Deliberately NOT .reveal. The shared observer rewrites transitionDelay from
+   whatever crosses the trigger line in the same tick, and a vertical list
+   crosses one item at a time — every item won index 0 and therefore zero
+   delay, which is why the FAQ read as flat. These items have exactly one
+   controller: the .faq-list observer, which staggers them from a single
+   trigger. Travel is a little longer than .reveal because the cards are big. */
+.faq-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1);
+}
+.faq-reveal.visible { opacity: 1; transform: translateY(0); }
 
 /* ============================================================
    FOOTER
    ============================================================ */
 .footer { background: #111120; padding: 96px 80px 0; position: relative; overflow: hidden; }
-.footer-video {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; opacity: 0.08; z-index: 0; pointer-events: none;
-}
 .footer-overlay {
   position: absolute; inset: 0; z-index: 1;
   background: linear-gradient(to bottom, rgba(17,17,32,0.6) 0%, rgba(17,17,32,0.85) 100%);
@@ -940,7 +1018,20 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   .reveal { opacity: 1; transform: none; }
+  .faq-reveal { opacity: 1; transform: none; }
   .category-card.reveal { opacity: 1; transform: none; }
+}
+
+/* ============================================================
+   RESPONSIVE — NARROW DESKTOP
+   Six nav items outgrow the space between the logo and the CTA below ~1250px.
+   The gap is spent first; the FAQ label is shortened only because that was
+   still not enough, and only inside this band.
+   ============================================================ */
+@media (min-width: 769px) and (max-width: 1330px) {
+  .nav-links { gap: 16px; }
+  .nav-label-long  { display: none; }
+  .nav-label-short { display: inline; }
 }
 
 /* ============================================================
@@ -950,7 +1041,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   .nav { padding: 0 32px; }
   .nav-logo { margin-left: 24px; }
   .nav-logo img { width: 140px; }
-  .nav-links { gap: 22px; }
+  .nav-links { gap: 14px; }
   .nav-cta { margin-right: 24px; }
   .hero { height: calc(100vh - 124px); }
   .stats-bar { height: 124px; }
@@ -962,6 +1053,16 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   .categories-grid .category-card:last-child { grid-column: 1 / -1; max-width: 50%; margin: 0 auto; }
   .section-feature { padding: 80px 48px; }
   .feature-inner { gap: 48px; }
+  .section-store { padding: 80px 48px 0; }
+  /* Two rows of two rather than a tall thin column: at this width the side
+     tiles would otherwise be under 200px wide. */
+  .store-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 16px; padding-bottom: 80px;
+  }
+  .store-tile { aspect-ratio: 16 / 9; }
+  .store-tile--wide { grid-column: 1 / -1; grid-row: auto; aspect-ratio: 16 / 9; }
   .testimonials-wrap { padding: 0 80px; }
   .carousel-arrows { padding: 0 28px; }
   .section-faq { padding: 80px 48px 96px; }
@@ -982,25 +1083,45 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   .nav-links { display: none; }
   .nav-cta { display: none; }
   .nav-hamburger { display: flex; }
+  /* The number itself, not a second phone glyph. 44px min-height keeps the
+     touch target legal while the text sits on the header's baseline. */
+  .nav-call {
+    display: inline-flex; align-items: center;
+    margin-left: auto; margin-right: 12px;
+    padding: 8px 2px; min-height: 44px;
+    font-size: 0.86rem; font-weight: 600; letter-spacing: -0.01em;
+    color: #3d6340; white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.2s ease;
+  }
+  .nav-call:active { color: #2f4d32; }
+  .nav-call:focus-visible { outline: 2px solid var(--color-sage); outline-offset: 3px; border-radius: 3px; }
 
   /* --- HERO --- */
   .hero { height: calc(100vh - 272px); min-height: 420px; }
   .hero-panel { padding: 80px 24px 48px; }
-  .hero-panel h1 { font-size: clamp(1.7rem, 7.2vw, 2.4rem); }
+  .hero-panel h1,
+  .hero-panel .hero-title { font-size: clamp(1.7rem, 7.2vw, 2.4rem); }
   .slide-sub { font-size: 0.88rem; line-height: 1.65; }
-  .hero-dots { display: none; }
   .hero-btns { flex-direction: row; align-items: center; flex-wrap: nowrap; gap: 10px; justify-content: center; }
   .btn-primary, .btn-secondary { width: auto; max-width: none; padding: 10px 16px; font-size: 0.72rem; text-align: center; }
 
   /* --- STATS --- */
-  .stats-bar { height: auto; min-height: unset; padding: 20px 0; }
-  .stats-container { flex-direction: row; padding: 0 10px; }
-  .stat-item { flex: 1; padding: 8px 4px; }
-  .stat-divider { width: 1px; height: 44px; margin: 0; background: rgba(44,62,80,0.11); flex-shrink: 0; }
-  .stat-icon { width: 18px; height: 18px; margin-bottom: 4px; }
-  .stat-number { font-size: 1.1rem; }
-  .stat-unit { font-size: 0.72rem; }
-  .stat-label { font-size: 0.51rem; letter-spacing: 0.09em; line-height: 1.4; }
+  /* Three items fit by reclaiming space, not by shrinking type: the dividers
+     and their surrounding padding are dropped for a grid gap, which is where
+     the width comes from. The label holds at 0.69rem (~11px) — the readable
+     floor — at every width down to 320px. */
+  .stats-bar { height: auto; min-height: unset; padding: 24px 0; }
+  .stats-container {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px; padding: 0 14px;
+  }
+  .stat-item { padding: 4px 2px; }
+  .stat-divider { display: none; }
+  .stat-icon { width: 18px; height: 18px; margin-bottom: 6px; }
+  .stat-number { font-size: 1.3rem; }
+  .stat-unit { font-size: 0.6em; }
+  .stat-label { font-size: 0.69rem; letter-spacing: 0.06em; line-height: 1.4; }
 
   /* --- ABOUT --- */
   .section-about { padding: 80px 24px 0; }
@@ -1011,26 +1132,38 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   .collage-stack { margin-top: 0; gap: 12px; }
 
   /* --- CATEGORIES --- */
+  /* Single column at 3/2. The two-column grid forced `aspect-ratio: 1`, which
+     at 375px produced a card only ~156px TALL while the overlaid text needed
+     ~140px of it — the text was ~90% of the card. The fix is card height, not
+     smaller type, so the type here stays at readable sizes. This also removes
+     the need for the third card's `grid-column: 1 / -1` special case. */
   .section-categories { padding: 80px 24px 0; }
-  .categories-grid { grid-template-columns: 1fr 1fr; gap: 14px; padding-bottom: 60px; }
-  .categories-grid .category-card { aspect-ratio: 1; }
-  .categories-grid .category-card:last-child { grid-column: 1 / -1; aspect-ratio: 16/9; max-width: none; margin: 0; }
-  .category-content { padding: 14px 12px; }
-  .category-tag { margin-bottom: 5px; font-size: 0.6rem; padding: 3px 8px; }
-  .category-content h3 { font-size: 1rem; margin-bottom: 4px; }
-  .category-content p { font-size: 0.75rem; }
-  .category-cta { margin-top: 6px; font-size: 0.65rem; }
+  .categories-grid { grid-template-columns: 1fr; gap: 16px; padding-bottom: 60px; }
+  .categories-grid .category-card { aspect-ratio: 5/4; }
+  .categories-grid .category-card:last-child { grid-column: auto; aspect-ratio: 5/4; max-width: none; margin: 0; }
+  .category-content { padding: 22px 20px; }
+  .category-tag { margin-bottom: 8px; font-size: 0.63rem; padding: 4px 10px; }
+  .category-content h3 { font-size: 1.3rem; margin-bottom: 5px; }
+  .category-content p { font-size: 0.85rem; }
+  .category-cta { margin-top: 9px; font-size: 0.7rem; }
   /* --- FEATURE SECTIONS --- */
   .section-feature { padding: 60px 24px; }
+  .section-feature.has-wave .feature-inner { padding-bottom: 60px; }
   .feature-inner { display: flex; flex-direction: column; gap: 28px; align-items: stretch; }
   .feature-image { order: 2; width: 100%; }
   .feature-text { order: 1; width: 100%; }
   .feature-image img { aspect-ratio: 16/9; width: 100%; }
-  .feature-text h3 { font-size: 1.45rem; }
+  .feature-text h3,
+  .feature-text .feature-title { font-size: 1.45rem; }
   .feature-trust-strip { margin-top: 1.25rem; padding-top: 1.1rem; gap: 8px; }
 
+  /* --- STORE SHOWCASE --- */
+  .section-store { padding: 60px 24px 0; }
+  .store-grid { grid-template-columns: 1fr; gap: 12px; padding-bottom: 60px; }
+  .store-tile, .store-tile--wide { grid-column: auto; grid-row: auto; aspect-ratio: 16 / 9; }
+
   /* --- TESTIMONIALS --- */
-  .section-testimonials { padding: 64px 0 0; }
+  .section-testimonials { padding: 64px 0 18px; }
   .testimonials-header { padding: 0 24px; }
   .testimonials-sub { margin-bottom: 36px; }
   .testimonials-wrap { padding: 0; display: flex; flex-direction: column; overflow: hidden; }
@@ -1040,8 +1173,18 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
     display: flex; justify-content: center; gap: 20px;
     padding: 20px 0 4px; pointer-events: all;
   }
-  .testimonial-card { padding: 18px 20px; min-height: auto; }
-  .t-text { font-size: 0.83rem; line-height: 1.65; }
+  /* Square cards. align-items must leave `stretch`, or the track's default
+     would set the height and aspect-ratio would never apply. The card's width
+     is already a px value from JS, so the ratio resolves off that. Content is
+     centred vertically because the quotes differ in length and a square box
+     is taller than the shortest of them needs. */
+  .testimonials-track { align-items: flex-start; }
+  .testimonial-card {
+    aspect-ratio: 1 / 1; min-height: 0; overflow: hidden;
+    padding: 20px 22px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .t-text { font-size: clamp(0.76rem, 3.1vw, 0.85rem); line-height: 1.6; margin-bottom: 16px; }
   .t-stars { margin-bottom: 10px; }
   .t-sep { margin-bottom: 10px; }
 
@@ -1066,7 +1209,61 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   .section-header { margin-bottom: 40px; }
   .wa-fab { bottom: calc(20px + env(safe-area-inset-bottom,0px)); }
 }
+
+/* ============================================================
+   RESPONSIVE — NARROWEST PHONES
+   Under ~360px the third stat's display word ("Директно") is the widest thing
+   in the row, and the square review card runs 1px over its own box. Both are
+   given back by trimming the display number and the card's padding — the stat
+   LABELS stay at 0.69rem (~11px) at every width.
+   ============================================================ */
+@media (max-width: 360px) {
+  .stat-number { font-size: 1.12rem; }
+  .stat-icon { width: 17px; height: 17px; margin-bottom: 5px; }
+  .stat-label { letter-spacing: 0.04em; }
+  .testimonial-card { padding: 16px 17px; }
+  .t-text { margin-bottom: 12px; }
+  .t-stars { margin-bottom: 8px; }
+  .t-sep { margin-bottom: 8px; }
+}
   </style>
+  <script type="text/javascript">
+    /* Microsoft Clarity is consent-gated and the gate is READ-ONLY.
+       The banner that used to write the stored choice has been removed, so
+       this script can no longer set 'mlechko-consent' — only read it. In
+       practice that means Clarity loads for exactly one group: visitors whose
+       browser still holds an 'accepted' value written by the old banner. New
+       visitors, anyone who declined, anyone on a fresh browser or device, and
+       anyone who has cleared site data will never load it, and the accepted
+       cohort shrinks as storage is cleared.
+
+       The writer (store) and the get/set members were removed because nothing
+       called them once the banner went; behaviour is identical either way. */
+    (function () {
+      var KEY = 'mlechko-consent';
+      var loaded = false;
+
+      function loadClarity() {
+        if (loaded) return;
+        loaded = true;
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "y7gch7ijp7");
+      }
+
+      function stored() {
+        try { return localStorage.getItem(KEY); } catch (e) { return null; }
+      }
+
+      window.MlechkoConsent = {
+        hasAnalytics: function () { return stored() === 'accepted'; }
+      };
+
+      if (stored() === 'accepted') loadClarity();
+    })();
+  </script>
 </head>
 <body>
 
@@ -1078,21 +1275,28 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 <header class="nav" id="nav" role="banner">
   <div class="nav-inner">
     <a href="#" class="nav-logo" aria-label="Млечко — начало">
-      <img src="images/Mlechko-Logo.png" alt="Млечко" width="170">
+      <img src="images/logo-340.webp" alt="Млечко" width="170" height="49" fetchpriority="high" decoding="async">
     </a>
     <nav aria-label="Основна навигация">
       <ul class="nav-links">
+        <li><a href="#about">За нас</a></li>
         <li><a href="#categories">Продукти</a></li>
-        <li><a href="#about">За Нас</a></li>
-        <li><a href="#testimonials">Ревюта</a></li>
-        <li><a href="#faq">Въпроси</a></li>
-        <li><a href="#visit">Намерете Ни</a></li>
+        <li><a href="#store">Нашият магазин</a></li>
+        <li><a href="#testimonials">Отзиви</a></li>
+        <li><a href="#faq"><span class="nav-label-long">Често задавани въпроси</span><span class="nav-label-short">Въпроси</span></a></li>
+        <li><a href="#visit">Контакти</a></li>
       </ul>
     </nav>
-    <a href="tel:0878232365" class="nav-cta">
+    <a href="tel:0878232365" class="nav-cta" data-cta="nav-call">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.41 2 2 0 0 1 3.6 1.23h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.87a16 16 0 0 0 6 6l.86-1.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.41 15z"/></svg>
       Свържете се
     </a>
+    <!-- Mobile-only call action. The desktop CTA is hidden below 768px, which
+         left phones with nothing but a hamburger — the highest-intent action
+         on a shop site was two taps and a scroll away. The number is shown as
+         text rather than a second phone glyph: it reads as the shop's number
+         at a glance and costs no more width than the icon button did. -->
+    <a href="tel:0878232365" class="nav-call" data-cta="nav-call" aria-label="Обади се на 0878 232 365">0878 232 365</a>
     <button class="nav-hamburger" id="nav-open" aria-label="Отвори меню" aria-expanded="false" aria-controls="mobile-nav">
       <span></span><span></span><span></span>
     </button>
@@ -1103,7 +1307,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 <div class="mobile-nav" id="mobile-nav" role="dialog" aria-label="Мобилна навигация" aria-modal="true">
   <div class="mobile-nav-top">
     <a href="#" class="mobile-nav-logo" aria-label="Млечко — начало">
-      <img src="images/Mlechko-Logo.png" alt="Млечко" width="120">
+      <img src="images/logo-340.webp" alt="Млечко" width="120" height="35" decoding="async">
     </a>
     <button class="mobile-nav-close" id="mobile-close" aria-label="Затвори меню">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1111,17 +1315,18 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   </div>
   <div class="mobile-nav-body">
     <ul class="mobile-nav-links">
+      <li><a href="#about">За нас</a></li>
       <li><a href="#categories">Продукти</a></li>
-      <li><a href="#about">За Нас</a></li>
-      <li><a href="#testimonials">Ревюта</a></li>
-      <li><a href="#faq">Въпроси</a></li>
-      <li><a href="#visit">Намерете Ни</a></li>
+      <li><a href="#store">Нашият магазин</a></li>
+      <li><a href="#testimonials">Отзиви</a></li>
+      <li><a href="#faq">Често задавани въпроси</a></li>
+      <li><a href="#visit">Контакти</a></li>
     </ul>
     <p class="mobile-nav-slogan">„Нищо повече и нищо по-малко."</p>
     <div class="mobile-nav-socials">
       <!-- TODO: add Facebook and Instagram links once real profile URLs are available -->
       <a href="viber://chat?number=%2B359878232365" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Viber">
-        <img src="images/Viber%20Icon.png" alt="" aria-hidden="true">
+        <img src="images/viber-120.webp" alt="" aria-hidden="true" width="40" height="40" loading="lazy" decoding="async">
       </a>
     </div>
     <div class="mobile-nav-compact-info">
@@ -1137,7 +1342,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
     </div>
   </div>
   <div class="mobile-nav-bottom">
-    <a href="tel:0878232365" class="mobile-nav-cta-btn">
+    <a href="tel:0878232365" class="mobile-nav-cta-btn" data-cta="menu-call">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.41 2 2 0 0 1 3.6 1.23h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.87a16 16 0 0 0 6 6l.86-1.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.41 15z"/></svg>
       Свържете се
     </a>
@@ -1150,42 +1355,46 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
      HERO
      ============================================================ -->
 <section class="hero" aria-label="Начална секция">
-  <video class="hero-video" autoplay muted loop playsinline aria-hidden="true" poster="images/hero-header.jpg">
-    <source src="Hero video.mp4" type="video/mp4">
+  <!-- No `autoplay` attribute: playback is started from JS after load, so the
+       poster (the LCP element) is never competing with 2.7MB of video, and so
+       reduced-motion users get a still image instead. -->
+  <video class="hero-video" id="hero-video" muted loop playsinline preload="none"
+         aria-hidden="true" poster="images/hero-poster-900.webp">
+    <source src="media/hero-768.mp4" type="video/mp4" media="(max-width: 768px)">
+    <source src="media/hero-1280.mp4" type="video/mp4">
   </video>
   <div class="hero-overlay" aria-hidden="true"></div>
   <div class="hero-panel active" aria-hidden="false">
     <span class="slide-tagline">Специализиран Магазин · Пловдив</span>
     <h1><span class="h-line">Специализиран магазин.</span><span class="h-line">Истински вкус.</span></h1>
-    <p class="slide-sub">Пресни млечни продукти, яйца и маслини — всяка сутрин от производителя.</p>
+    <p class="slide-sub">Тесен, внимателно подбран асортимент вместо безкрайни рафтове с еднакви продукти.</p>
     <div class="hero-btns">
-      <a href="#categories" class="btn-primary">Нашите Продукти</a>
-      <a href="#visit" class="btn-secondary">Намерете Ни</a>
+      <a href="#visit" class="btn-primary" data-cta="hero-visit">Намерете Ни</a>
+      <a href="#categories" class="btn-secondary" data-cta="hero-products">Нашите Продукти</a>
     </div>
   </div>
   <div class="hero-panel" aria-hidden="true">
     <span class="slide-tagline">Намерете ни в Пловдив</span>
-    <h1>Пловдивски дом<br>на качеството.</h1>
-    <p class="slide-sub">На Пещерско шосе 26 — отворени всяка сутрин с прясна доставка.</p>
+    <p class="hero-title">Пловдивски дом<br>на качеството.</p>
+    <p class="slide-sub">Пещерско шосе 26, кв. Младежки хълм. Отбийте се на път за вкъщи, шест дни в седмицата.</p>
     <div class="hero-btns">
-      <a href="#categories" class="btn-primary">Нашите Продукти</a>
-      <a href="#visit" class="btn-secondary">Намерете Ни</a>
+      <a href="#visit" class="btn-primary" data-cta="hero-visit">Намерете Ни</a>
+      <a href="#categories" class="btn-secondary" data-cta="hero-products">Нашите Продукти</a>
     </div>
   </div>
   <div class="hero-panel" aria-hidden="true">
-    <span class="slide-tagline">Всеки Ден · Прясна Доставка</span>
-    <h1><span class="h-line">Над 30 вида продукти.</span><span class="h-line">Всеки ден пресни.</span></h1>
-    <p class="slide-sub">Над 30 продукта от проверени производители — доставени всяка сутрин.</p>
+    <span class="slide-tagline">Директно От Производителя</span>
+    <p class="hero-title"><span class="h-line">Над 100 вида продукти.</span><span class="h-line">Подбрани за вас.</span></p>
+    <p class="slide-sub">Стоката пристига всяка седмица директно от фермата, без склад и без дълъг престой по рафтовете.</p>
     <div class="hero-btns">
-      <a href="#categories" class="btn-primary">Нашите Продукти</a>
-      <a href="#visit" class="btn-secondary">Намерете Ни</a>
+      <a href="#visit" class="btn-primary" data-cta="hero-visit">Намерете Ни</a>
+      <a href="#categories" class="btn-secondary" data-cta="hero-products">Нашите Продукти</a>
     </div>
   </div>
-  <div class="hero-dots" role="tablist" aria-label="Слайдове на героя">
-    <button class="hero-dot active" role="tab" aria-selected="true" aria-label="Слайд 1"></button>
-    <button class="hero-dot" role="tab" aria-selected="false" aria-label="Слайд 2"></button>
-    <button class="hero-dot" role="tab" aria-selected="false" aria-label="Слайд 3"></button>
-  </div>
+  <!-- The slides rotate automatically with no manual controls. The aria-live
+       status went with them: a status region firing every 6s that a visitor
+       has no way to stop is noise, not help. Panel aria-hidden still exposes
+       only the active slide, and reduced motion suppresses rotation entirely. -->
   <div class="hero-wave-wrap" aria-hidden="true">
     <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M0,35 C360,70 1080,0 1440,35 L1440,70 L0,70 Z" fill="#FAF7F2"/>
@@ -1208,28 +1417,37 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
       <span class="stat-number">100+</span>
       <span class="stat-label">Вида Млечни Продукти</span>
     </div>
+    <!-- Two earlier claims were dropped from this row and are not coming back.
+         "365 Дни Отворени Всеки Ден" was false — the shop closes on Sundays,
+         as the hours here, the menu and the opening-hours schema all say.
+         "20+ години" contradicted the site's own "работи от 2010 година", so
+         it is replaced by the founding year, which is checkable. The third
+         slot states what the shop actually does differently rather than
+         counting anything. Labels are kept short so three items fit at a
+         readable size on a 320px phone. -->
     <div class="stat-divider" aria-hidden="true"></div>
     <div class="stat-item reveal reveal-delay-1">
-      <div class="stat-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="8.5" r="5.5"/>
-          <path d="M8.21 13.38L7 23l5-3 5 3-1.21-9.62"/>
-          <polyline points="10 8 12 10 14.5 7"/>
-        </svg>
-      </div>
-      <span class="stat-number">365</span>
-      <span class="stat-label">Дни Отворени Всеки Ден</span>
-    </div>
-    <div class="stat-divider" aria-hidden="true"></div>
-    <div class="stat-item reveal reveal-delay-2">
       <div class="stat-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 10.5L12 3l9 7.5"/>
           <path d="M5 9v10a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1V9"/>
         </svg>
       </div>
-      <span class="stat-number">20+ <span class="stat-unit">години</span></span>
-      <span class="stat-label">Опит в бранша</span>
+      <span class="stat-number">От 2010</span>
+      <span class="stat-label">В Пловдив</span>
+    </div>
+    <div class="stat-divider" aria-hidden="true"></div>
+    <div class="stat-item reveal reveal-delay-2">
+      <div class="stat-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="4" cy="12" r="2"/>
+          <path d="M7 12h10"/>
+          <path d="M14.5 8.5L18 12l-3.5 3.5"/>
+          <circle cx="20.5" cy="12" r="1.2" opacity="0.45"/>
+        </svg>
+      </div>
+      <span class="stat-number">Директно</span>
+      <span class="stat-label">От Производителя</span>
     </div>
   </div>
 </section>
@@ -1247,23 +1465,23 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   <div class="about-inner">
     <div class="about-collage">
       <div class="collage-img-main reveal">
-        <img src="images/IMG_0702.jpg" alt="Екстериор на магазин Млечко" loading="lazy">
+        <picture><source type="image/avif" srcset="images/collage-store-260.avif 260w, images/collage-store-500.avif 500w" sizes="(max-width: 768px) calc((100vw - 60px) / 2), (max-width: 1024px) calc((100vw - 116px) / 2), 242px"><img src="images/collage-store-500.webp" srcset="images/collage-store-260.webp 260w, images/collage-store-500.webp 500w" sizes="(max-width: 768px) calc((100vw - 60px) / 2), (max-width: 1024px) calc((100vw - 116px) / 2), 242px" width="500" height="281" alt="Екстериор на магазин Млечко" loading="lazy" decoding="async"></picture>
       </div>
       <div class="collage-stack">
         <div class="collage-img-small right reveal reveal-delay-1">
-          <img src="images/number%202.jpg" alt="Разнообразие от продукти" loading="lazy">
+          <picture><source type="image/avif" srcset="images/collage-goods-260.avif 260w, images/collage-goods-500.avif 500w" sizes="(max-width: 768px) calc((100vw - 60px) / 2), (max-width: 1024px) calc((100vw - 116px) / 2), 242px"><img src="images/collage-goods-500.webp" srcset="images/collage-goods-260.webp 260w, images/collage-goods-500.webp 500w" sizes="(max-width: 768px) calc((100vw - 60px) / 2), (max-width: 1024px) calc((100vw - 116px) / 2), 242px" width="500" height="340" alt="Разнообразие от продукти" loading="lazy" decoding="async"></picture>
         </div>
         <div class="collage-img-small reveal reveal-delay-2">
-          <img src="images/Side%20of%20store%20image.jpg" alt="Страна на магазина" loading="lazy">
+          <picture><source type="image/avif" srcset="images/collage-side-260.avif 260w, images/collage-side-500.avif 500w" sizes="(max-width: 768px) calc((100vw - 60px) / 2), (max-width: 1024px) calc((100vw - 116px) / 2), 242px"><img src="images/collage-side-500.webp" srcset="images/collage-side-260.webp 260w, images/collage-side-500.webp 500w" sizes="(max-width: 768px) calc((100vw - 60px) / 2), (max-width: 1024px) calc((100vw - 116px) / 2), 242px" width="500" height="281" alt="Страна на магазина" loading="lazy" decoding="async"></picture>
         </div>
       </div>
     </div>
     <div class="about-text">
       <span class="eyebrow reveal">За Нас</span>
       <h2 class="reveal reveal-delay-1">Пресен продукт,<br>директно от производителя.</h2>
-      <p class="reveal reveal-delay-2 about-text-desktop">Млечко работи от 2010 година с едно убеждение: качествената храна не трябва да бъде лукс. Всяка сутрин пресни млечни продукти, яйца и маслини пристигат директно от проверени производители, без посредници и надценки.</p>
-      <p class="reveal reveal-delay-3 about-text-desktop">Специализираме се в едно нещо и го правим с последователност: да свържем пловдивските домакинства с истински пресни продукти, всяка сутрин, без отстъпки от качеството.</p>
-      <p class="reveal reveal-delay-2 about-text-mobile">Качествена храна не трябва да бъде лукс. Пресни млечни продукти, яйца и маслини, доставени всяка сутрин директно от производителите, без посредници.</p>
+      <p class="reveal reveal-delay-2 about-text-desktop">Млечко работи от 2010 година с едно убеждение: качествената храна не трябва да бъде лукс. Всяка седмица пресни млечни продукти, яйца и маслини пристигат директно от проверени производители, без посредници и надценки.</p>
+      <p class="reveal reveal-delay-3 about-text-desktop">Специализираме се в едно нещо и го правим с последователност: да свържем пловдивските домакинства с истински пресни продукти, седмица след седмица, без отстъпки от качеството.</p>
+      <p class="reveal reveal-delay-2 about-text-mobile">Качествена храна не трябва да бъде лукс. Пресни млечни продукти, яйца и маслини, доставени всяка седмица директно от производителите, без посредници.</p>
       <ul class="about-bullets">
         <li class="reveal reveal-delay-3">
           <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1271,14 +1489,14 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
         </li>
         <li class="reveal reveal-delay-4">
           <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-          Гарантирана прясност всяка сутрин
+          Гарантирана прясност при всяка доставка
         </li>
         <li class="reveal reveal-delay-5">
           <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
           Доверен от стотици пловдивски семейства
         </li>
       </ul>
-      <a href="#visit" class="about-cta reveal reveal-delay-6">
+      <a href="#visit" class="about-cta reveal reveal-delay-6" data-cta="about-visit">
         Намерете ни
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </a>
@@ -1298,24 +1516,30 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   <div class="section-header">
     <span class="eyebrow reveal">Нашите Продукти</span>
     <h2 class="reveal reveal-delay-1">Всичко прясно. Всичко избрано.</h2>
-    <p class="reveal reveal-delay-2">Млечни продукти, пресни яйца и деликатеси, доставени тази сутрин.</p>
+    <p class="reveal reveal-delay-2">Млечни продукти, пресни яйца и деликатеси, доставени прясно всяка седмица.</p>
   </div>
   <div class="categories-grid">
     <article class="category-card reveal">
-      <a href="#dairy-feature" aria-label="Разгледайте млечните продукти">
-        <img class="category-img" src="Enhanced%20images/Category-Млечни%20Продукти.png" alt="Млечни продукти" loading="lazy">
+      <a href="#dairy-feature" aria-label="Разгледайте млечните продукти" data-cta="cat-dairy">
+        <picture><source type="image/avif" srcset="images/cat-dairy-400.avif 400w, images/cat-dairy-800.avif 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 124px) / 2), 381px"><img class="category-img" src="images/cat-dairy-800.webp"
+             srcset="images/cat-dairy-400.webp 400w, images/cat-dairy-800.webp 800w"
+             sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 124px) / 2), 381px"
+             width="800" height="1066" alt="Млечни продукти" loading="lazy" decoding="async"></picture>
         <div class="category-gradient" aria-hidden="true"></div>
         <div class="category-content">
-          <span class="category-tag">Ежедневно</span>
+          <span class="category-tag">Седмично</span>
           <h3>Млечни Продукти</h3>
-          <p>Над 30 вида · Ежедневна доставка</p>
+          <p>Над 100 вида · Седмична доставка</p>
           <span class="category-cta">Разгледай →</span>
         </div>
       </a>
     </article>
     <article class="category-card reveal reveal-delay-1">
-      <a href="#eggs-feature" aria-label="Разгледайте яйцата">
-        <img class="category-img" src="Enhanced%20images/Category-Eggs.png" alt="Пресни яйца" loading="lazy">
+      <a href="#eggs-feature" aria-label="Разгледайте яйцата" data-cta="cat-eggs">
+        <picture><source type="image/avif" srcset="images/cat-eggs-400.avif 400w, images/cat-eggs-800.avif 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 124px) / 2), 381px"><img class="category-img" src="images/cat-eggs-800.webp"
+             srcset="images/cat-eggs-400.webp 400w, images/cat-eggs-800.webp 800w"
+             sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 124px) / 2), 381px"
+             width="800" height="1066" alt="Пресни яйца" loading="lazy" decoding="async"></picture>
         <div class="category-gradient" aria-hidden="true"></div>
         <div class="category-content">
           <span class="category-tag">Фермерски</span>
@@ -1326,8 +1550,11 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
       </a>
     </article>
     <article class="category-card reveal reveal-delay-2">
-      <a href="#olives-feature" aria-label="Разгледайте маслините и деликатесите">
-        <img class="category-img" src="Enhanced%20images/Category-Маслини%20%26%20Деликатеси.png" alt="Маслини и деликатеси" loading="lazy">
+      <a href="#olives-feature" aria-label="Разгледайте маслините и деликатесите" data-cta="cat-olives">
+        <picture><source type="image/avif" srcset="images/cat-olives-400.avif 400w, images/cat-olives-800.avif 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 124px) / 2), 381px"><img class="category-img" src="images/cat-olives-800.webp"
+             srcset="images/cat-olives-400.webp 400w, images/cat-olives-800.webp 800w"
+             sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 124px) / 2), 381px"
+             width="800" height="1066" alt="Маслини и деликатеси" loading="lazy" decoding="async"></picture>
         <div class="category-gradient" aria-hidden="true"></div>
         <div class="category-content">
           <span class="category-tag">Избор</span>
@@ -1351,19 +1578,19 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 <section class="section-feature bg-cream" id="dairy-feature" aria-label="Млечни продукти">
   <div class="feature-inner">
     <div class="feature-image reveal">
-      <img src="Enhanced%20images/All%20Dairy%20Products.png" alt="Разнообразие от млечни продукти" loading="lazy">
+      <picture><source type="image/avif" srcset="images/feat-dairy-600.avif 600w, images/feat-dairy-1200.avif 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 564px"><img src="images/feat-dairy-1200.webp" srcset="images/feat-dairy-600.webp 600w, images/feat-dairy-1200.webp 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 564px" width="1200" height="800" alt="Разнообразие от млечни продукти" loading="lazy" decoding="async"></picture>
     </div>
     <div class="feature-text">
       <span class="eyebrow reveal reveal-delay-1">Млечни Продукти</span>
-      <h3 class="reveal reveal-delay-2">Над 30 вида млечни продукти</h3>
-      <p class="reveal reveal-delay-3">Прясно мляко, кисело мляко, сирене, кашкавал и масло, доставени тази сутрин директно от производителя.</p>
+      <h2 class="feature-title reveal reveal-delay-2">Над 100 вида млечни продукти</h2>
+      <p class="reveal reveal-delay-3">Прясно мляко, кисело мляко, сирене, кашкавал и масло, доставени прясно всяка седмица директно от производителя.</p>
       <ul class="feature-reasons">
-        <li class="reveal reveal-delay-4"><svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Ежедневна доставка до 6:00</li>
+        <li class="reveal reveal-delay-4"><svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Редовна седмична доставка</li>
         <li class="reveal reveal-delay-5"><svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Директно от производителя, без складове</li>
-        <li class="reveal reveal-delay-6"><svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Над 30 вида, намерете любимото си</li>
+        <li class="reveal reveal-delay-6"><svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Над 100 вида, намерете любимото си</li>
       </ul>
       <div class="feature-trust-strip reveal reveal-delay-7">
-        <span>Доставка до 06:00 всяка сутрин</span>
+        <span>Седмична доставка директно от производителя</span>
         <span>Без складиране · директно от производителя</span>
         <span>Кисело мляко, сирена, масло, кашкавал и още</span>
       </div>
@@ -1378,15 +1605,15 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 <section class="section-feature bg-mist" id="eggs-feature" aria-label="Яйца">
   <div class="feature-inner flipped">
     <div class="feature-image reveal">
-      <img src="Enhanced%20images/Featured-Eggs.png" alt="Пресни яйца от ферма" loading="lazy">
+      <picture><source type="image/avif" srcset="images/feat-eggs-600.avif 600w, images/feat-eggs-1200.avif 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 564px"><img src="images/feat-eggs-1200.webp" srcset="images/feat-eggs-600.webp 600w, images/feat-eggs-1200.webp 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 564px" width="1200" height="1200" alt="Пресни яйца от ферма" loading="lazy" decoding="async"></picture>
     </div>
     <div class="feature-text">
       <span class="eyebrow reveal reveal-delay-1">Пресни Яйца</span>
-      <h3 class="reveal reveal-delay-2">Пресни яйца, събрани днес</h3>
-      <p class="reveal reveal-delay-3">Яйца от малки семейни ферми, доставени всяка сутрин.</p>
+      <h2 class="feature-title reveal reveal-delay-2">Пресни яйца от малки ферми</h2>
+      <p class="reveal reveal-delay-3">Яйца от малки семейни ферми, доставени прясно всяка седмица.</p>
       <ul class="feature-reasons">
         <li class="reveal reveal-delay-4"><svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> От малки, проверени ферми</li>
-        <li class="reveal reveal-delay-5"><svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Събрани същата сутрин</li>
+        <li class="reveal reveal-delay-5"><svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Събрани малко преди доставката</li>
         <li class="reveal reveal-delay-6"><svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Кокошки от малки стопанства</li>
       </ul>
       <div class="feature-trust-strip reveal reveal-delay-7">
@@ -1402,14 +1629,14 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   <div class="feature-divider"></div>
 </div>
 
-<section class="section-feature bg-cream" id="olives-feature" aria-label="Маслини и деликатеси">
+<section class="section-feature bg-cream has-wave" id="olives-feature" aria-label="Маслини и деликатеси">
   <div class="feature-inner">
     <div class="feature-image reveal">
-      <img src="Enhanced%20images/featured-Olives.png" alt="Маслини и деликатеси" loading="lazy">
+      <picture><source type="image/avif" srcset="images/feat-olives-600.avif 600w, images/feat-olives-1200.avif 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 564px"><img src="images/feat-olives-1200.webp" srcset="images/feat-olives-600.webp 600w, images/feat-olives-1200.webp 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 564px" width="1200" height="1200" alt="Маслини и деликатеси" loading="lazy" decoding="async"></picture>
     </div>
     <div class="feature-text">
       <span class="eyebrow reveal reveal-delay-1">Средиземноморски Избор</span>
-      <h3 class="reveal reveal-delay-2">Маслини и деликатеси от цял свят</h3>
+      <h2 class="feature-title reveal reveal-delay-2">Маслини и деликатеси от цял свят</h2>
       <p class="reveal reveal-delay-3">Маслини от Гърция, Испания и Близкия Изток, в различни сортове, на кило или предварително опаковани.</p>
       <ul class="feature-reasons">
         <li class="reveal reveal-delay-4"><svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Подбрани от Гърция, Испания и Близкия Изток</li>
@@ -1423,9 +1650,57 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
       </div>
     </div>
   </div>
+  <!-- Fill is the NEXT section's colour, which is how every other divider on
+       the page works. That is now the store showcase, not the testimonials. -->
   <div class="wave-divider" aria-hidden="true">
     <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0,35 C360,70 1080,0 1440,35 L1440,70 L0,70 Z" fill="#FAF7F2"/>
+      <path d="M0,35 C360,70 1080,0 1440,35 L1440,70 L0,70 Z" fill="#F4F1EC"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ============================================================
+     STORE SHOWCASE
+     Real photography only: the wide shot is the shop's own interior photo,
+     the three details are stills lifted from the shop's own walkthrough
+     footage. Every tile ships 16:9 and is cropped by CSS per breakpoint, so
+     one master serves every layout and no crop is guessed at build time.
+     ============================================================ -->
+<section class="section-store" id="store" aria-label="Нашият магазин">
+  <div class="section-header">
+    <span class="eyebrow reveal">Нашият Магазин</span>
+    <h2 class="reveal reveal-delay-1">Разгледайте магазина отблизо</h2>
+    <p class="reveal reveal-delay-2">Витрините, рафтовете и щандовете такива, каквито ще ги видите на Пещерско шосе 26.</p>
+  </div>
+  <div class="store-grid">
+    <figure class="store-tile store-tile--wide reveal">
+      <picture>
+        <source type="image/avif" srcset="images/store-interior-600.avif 600w, images/store-interior-1200.avif 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 787px">
+        <img src="images/store-interior-1200.webp" srcset="images/store-interior-600.webp 600w, images/store-interior-1200.webp 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 787px" width="1200" height="675" alt="Интериорът на магазин Млечко: рафтове с пакетирани продукти, хладилна витрина и щанд с млечни продукти и маслини" loading="lazy" decoding="async">
+      </picture>
+    </figure>
+    <figure class="store-tile reveal reveal-delay-1">
+      <picture>
+        <source type="image/avif" srcset="images/store-cheese-400.avif 400w, images/store-cheese-800.avif 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 108px) / 2), 393px">
+        <img src="images/store-cheese-800.webp" srcset="images/store-cheese-400.webp 400w, images/store-cheese-800.webp 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 108px) / 2), 393px" width="800" height="450" alt="Витрина с жълти сирена и кашкавали, подредени с етикети с цени" loading="lazy" decoding="async">
+      </picture>
+    </figure>
+    <figure class="store-tile reveal reveal-delay-2">
+      <picture>
+        <source type="image/avif" srcset="images/store-olives-400.avif 400w, images/store-olives-800.avif 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 108px) / 2), 393px">
+        <img src="images/store-olives-800.webp" srcset="images/store-olives-400.webp 400w, images/store-olives-800.webp 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 108px) / 2), 393px" width="800" height="450" alt="Щанд с маслини в тави: каламата, гемлик, услу и стафидари, с ръчно написани табелки" loading="lazy" decoding="async">
+      </picture>
+    </figure>
+    <figure class="store-tile reveal reveal-delay-3">
+      <picture>
+        <source type="image/avif" srcset="images/store-sirene-400.avif 400w, images/store-sirene-800.avif 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 108px) / 2), 393px">
+        <img src="images/store-sirene-800.webp" srcset="images/store-sirene-400.webp 400w, images/store-sirene-800.webp 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 108px) / 2), 393px" width="800" height="450" alt="Витрина с бяло саламурено сирене от краве, овче и козе мляко на блокове" loading="lazy" decoding="async">
+      </picture>
+    </figure>
+  </div>
+  <div class="wave-divider" aria-hidden="true">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,35 C480,0 960,70 1440,35 L1440,70 L0,70 Z" fill="#1A1A2E"/>
     </svg>
   </div>
 </section>
@@ -1435,22 +1710,27 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
      ============================================================ -->
 <section class="section-testimonials" id="testimonials" aria-label="Отзиви от клиенти">
   <div class="testimonials-header">
-    <span class="eyebrow">Отзиви</span>
-    <h2>Думите на нашите клиенти</h2>
-    <p class="testimonials-sub">Истински мнения от клиенти, които идват при нас всяка сутрин.</p>
+    <span class="eyebrow reveal">Отзиви</span>
+    <h2 class="reveal">Думите на нашите клиенти</h2>
+    <p class="testimonials-sub reveal">Истински мнения от клиенти, които се връщат при нас седмица след седмица.</p>
   </div>
-  <div class="testimonials-wrap">
-    <div class="testimonials-viewport" id="testimonials-viewport">
+  <div class="testimonials-wrap" id="testimonials-wrap">
+    <div class="testimonials-viewport" id="testimonials-viewport"
+         role="group" aria-roledescription="карусел" aria-label="Отзиви от клиенти">
       <div class="testimonials-track" id="testimonials-track"></div>
     </div>
     <div class="carousel-arrows" role="group" aria-label="Навигация в отзивите">
       <button class="carousel-arrow" id="carousel-prev" aria-label="Предишен отзив">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <button class="carousel-arrow" id="carousel-next" aria-label="Следващ отзив">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
     </div>
+    <!-- The pause control is gone; the status region stays because the arrows
+         do, and a screen-reader user driving them needs to hear where they
+         landed. Autoplay still stops on hover and on focus within. -->
+    <p class="visually-hidden" id="carousel-status" role="status" aria-live="polite"></p>
   </div>
   <div class="wave-divider" aria-hidden="true">
     <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -1469,27 +1749,27 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
     <p class="reveal reveal-delay-2">Най-честите неща, които ни питат клиентите.</p>
   </div>
   <div class="faq-list">
-    <details class="faq-item reveal reveal-delay-1">
+    <details class="faq-item faq-reveal">
       <summary>Къде се намира магазин Млечко?</summary>
       <p>На бул. Пещерско шосе 26, кв. Младежки хълм, Пловдив.</p>
     </details>
-    <details class="faq-item reveal reveal-delay-2">
+    <details class="faq-item faq-reveal">
       <summary>Какво е работното време?</summary>
       <p>Понеделник – петък: 09:30 – 20:00. Събота: 08:30 – 14:30. Неделя почивен ден.</p>
     </details>
-    <details class="faq-item reveal reveal-delay-3">
+    <details class="faq-item faq-reveal">
       <summary>Какви продукти предлагате?</summary>
-      <p>Над 30 вида пресни млечни продукти, яйца и маслини, събрани от доверени производители.</p>
+      <p>Над 100 вида пресни млечни продукти, яйца и маслини, събрани от доверени производители.</p>
     </details>
-    <details class="faq-item reveal reveal-delay-4">
-      <summary>Всеки ден ли пристигат пресни продукти?</summary>
-      <p>Да. Продуктите пристигат директно от производителите всяка сутрин до 6:00, без посредници.</p>
+    <details class="faq-item faq-reveal">
+      <summary>Колко често пристигат пресни продукти?</summary>
+      <p>Доставките са седмични — продуктите пристигат директно от производителите, без посредници и без дълъг престой по рафтовете.</p>
     </details>
-    <details class="faq-item reveal reveal-delay-5">
+    <details class="faq-item faq-reveal">
       <summary>От колко години работи Млечко?</summary>
       <p>От 2010 година обслужваме пловдивски домакинства с прясна храна на честни цени.</p>
     </details>
-    <details class="faq-item reveal reveal-delay-6">
+    <details class="faq-item faq-reveal">
       <summary>Предлагате ли доставка до дома?</summary>
       <p>В момента продуктите се предлагат само на място в магазина. За въпроси и наличност пишете ни на 0878 232 365 или през Viber.</p>
     </details>
@@ -1533,7 +1813,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
           </div>
           <div>
             <p class="info-label">Телефон</p>
-            <p class="info-content"><a href="tel:0878232365">0878 232 365</a></p>
+            <p class="info-content"><a href="tel:0878232365" data-cta="visit-call">0878 232 365</a></p>
           </div>
         </div>
         <div class="info-block reveal reveal-delay-5">
@@ -1549,13 +1829,16 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
     </div>
     <div class="visit-map reveal reveal-delay-3">
       <span class="visit-map-heading">Намерете ни на картата</span>
+      <!-- No inline style: it duplicated the stylesheet rule and, being inline,
+           beat the mobile override, so the map rendered 450px tall on phones
+           instead of 280px. loading="lazy" keeps the Maps payload off the
+           initial load — it sits far below the fold. -->
       <iframe
         src="https://maps.google.com/maps?q=Млечко+Пловдив&output=embed"
         title="Местоположение на Млечко в Пловдив"
+        loading="lazy"
         allowfullscreen
-        referrerpolicy="no-referrer-when-downgrade"
-        style="width:100%;height:450px;border:none;border-radius:10px;display:block;box-shadow:0 8px 40px rgba(26,26,46,0.1)">
-      </iframe>
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
     </div>
   </div>
 </section>
@@ -1566,20 +1849,20 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
      FOOTER
      ============================================================ -->
 <footer class="footer" aria-label="Футър">
-  <video class="footer-video" autoplay muted loop playsinline aria-hidden="true">
-    <source src="Hero video.mp4" type="video/mp4">
-  </video>
+  <!-- The footer video was removed: it rendered at opacity 0.08 behind a
+       gradient overlay, costing a second decode pipeline and memory for
+       something effectively invisible. The overlay alone carries the look. -->
   <div class="footer-overlay" aria-hidden="true"></div>
   <div class="footer-grid">
     <div class="reveal">
       <div class="footer-brand-logo">
-        <img src="images/Mlechko-Logo.png" alt="Млечко" width="130" loading="lazy">
+        <img src="images/logo-340.webp" alt="Млечко" width="130" height="38" loading="lazy" decoding="async">
       </div>
       <p class="footer-tagline">„Нищо повече и нищо по-малко."</p>
       <div class="footer-socials">
         <!-- TODO: add Facebook and Instagram links once real profile URLs are available -->
         <a href="viber://chat?number=%2B359878232365" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Viber">
-          <img src="images/Viber%20Icon.png" alt="" aria-hidden="true">
+          <img src="images/viber-120.webp" alt="" aria-hidden="true" width="40" height="40" loading="lazy" decoding="async">
         </a>
       </div>
     </div>
@@ -1588,11 +1871,12 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
       <nav aria-label="Навигация в футъра">
         <ul class="footer-nav">
           <li><a href="#">Начало</a></li>
+          <li><a href="#about">За нас</a></li>
           <li><a href="#categories">Продукти</a></li>
-          <li><a href="#about">За Нас</a></li>
-          <li><a href="#visit">Намерете Ни</a></li>
-          <li><a href="#testimonials">Ревюта</a></li>
-          <li><a href="#faq">Въпроси</a></li>
+          <li><a href="#store">Нашият магазин</a></li>
+          <li><a href="#testimonials">Отзиви</a></li>
+          <li><a href="#faq">Често задавани въпроси</a></li>
+          <li><a href="#visit">Контакти</a></li>
         </ul>
       </nav>
     </div>
@@ -1604,7 +1888,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
       </div>
       <div class="footer-contact-row">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.41 2 2 0 0 1 3.6 1.23h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.87a16 16 0 0 0 6 6l.86-1.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.41 15z"/></svg>
-        <a href="tel:0878232365">0878 232 365</a>
+        <a href="tel:0878232365" data-cta="footer-call">0878 232 365</a>
       </div>
       <div class="footer-contact-row">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -1631,27 +1915,100 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 
 <!-- VIBER FAB -->
 <aside aria-label="Контакт чрез Viber">
-  <a href="viber://chat?number=%2B359878232365" class="wa-fab" aria-label="Пишете ни във Viber" target="_blank" rel="noopener noreferrer">
-    <img src="images/Viber%20Icon.png" alt="" aria-hidden="true">
+  <a href="viber://chat?number=%2B359878232365" class="wa-fab" data-cta="viber-fab" aria-label="Пишете ни във Viber" target="_blank" rel="noopener noreferrer">
+    <img src="images/viber-120.webp" alt="" aria-hidden="true" width="40" height="40" loading="lazy" decoding="async">
     <span class="wa-tooltip" aria-hidden="true">Пишете ни във Viber</span>
   </a>
 </aside>
 
 <script>
 /* ============================================================
+   NOTE ON ANALYTICS
+   The consent banner and its footer trigger were removed. The consent GATE in
+   the head script is untouched and still decides whether Clarity loads, so
+   analytics behaviour is unchanged by this file: visitors who accepted before
+   still load it, and nobody else can now opt in, because the UI that wrote
+   the stored choice is gone.
+   ============================================================ */
+
+/* ============================================================
+   CTA TRACKING
+   Answers the only question that matters for a shop site: does the website
+   send people to the shop? Routed through Clarity, so it inherits the
+   consent gate in the head script and fires for nobody without stored consent.
+   ============================================================ */
+function trackCta(name) {
+  if (!window.MlechkoConsent.hasAnalytics()) return;
+  if (typeof window.clarity === 'function') window.clarity('event', 'cta-' + name);
+}
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-cta]');
+  if (el) trackCta(el.getAttribute('data-cta'));
+}, { passive: true });
+
+/* ============================================================
    SCROLL REVEAL
    ============================================================ */
+/* Everything that crosses the trigger line in one scroll tick arrives in a
+   single `entries` array. That array is "the group that entered together", so
+   we group it by section, order each group by RENDERED position, and hand out
+   an incremental delay.
+
+   Sorting on boundingClientRect.top (supplied by the observer, so no forced
+   reflow) is what makes this correct: it automatically respects every CSS
+   `order:` flip and the `align-items: center` column offset, neither of which
+   DOM order or a static delay class can see. An element that crosses alone
+   gets index 0 and therefore no delay at all. */
+const REVEAL_STEP = 65;   /* ms between siblings inside one group */
+const REVEAL_CAP  = 325;  /* ms — ceiling on stagger, so no group drags */
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
 const revealObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.classList.add('visible');
-      revealObs.unobserve(e.target);
-      setTimeout(() => { e.target.style.willChange = 'auto'; }, 1600);
-    }
-  });
-}, { threshold: 0.08 });
+  const groups = new Map();
+  for (const e of entries) {
+    if (!e.isIntersecting) continue;
+    const section = e.target.closest('section, footer') || document.body;
+    if (!groups.has(section)) groups.set(section, []);
+    groups.get(section).push(e);
+  }
+  for (const group of groups.values()) {
+    group.sort((a, b) =>
+      (a.boundingClientRect.top  - b.boundingClientRect.top) ||
+      (a.boundingClientRect.left - b.boundingClientRect.left));
+    group.forEach((e, i) => {
+      const el = e.target;
+      const delay = reduceMotion.matches ? 0 : Math.min(i * REVEAL_STEP, REVEAL_CAP);
+      el.style.transitionDelay = delay + 'ms';
+      el.style.willChange = 'opacity, transform';
+      el.classList.add('visible');
+      revealObs.unobserve(el);
+      setTimeout(() => { el.style.willChange = 'auto'; }, delay + 700);
+    });
+  }
+}, { threshold: 0, rootMargin: '0px 0px -12% 0px' });
 document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
 if (navigator.webdriver) document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+
+/* FAQ rows are revealed by THIS observer and nothing else — they carry
+   .faq-reveal, not .reveal, so the observer above never sees them and cannot
+   race it. The trigger is the list, not the rows: a vertical list crosses the
+   trigger line one row at a time, which is exactly why the shared observer's
+   batch-derived stagger collapsed to zero here. One trigger, one stagger. */
+const faqList = document.querySelector('.faq-list');
+if (faqList) {
+  const faqObs = new IntersectionObserver((entries, obs) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      obs.unobserve(e.target);
+      e.target.querySelectorAll('.faq-reveal').forEach((row, i) => {
+        row.style.transitionDelay = (reduceMotion.matches ? 0 : i * 80) + 'ms';
+        row.classList.add('visible');
+      });
+    }
+  }, { threshold: 0, rootMargin: '0px 0px -10% 0px' });
+  faqObs.observe(faqList);
+  if (navigator.webdriver) faqList.querySelectorAll('.faq-reveal').forEach(r => r.classList.add('visible'));
+}
 let _revealResizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(_revealResizeTimer);
@@ -1669,9 +2026,17 @@ const mobileNav = document.getElementById('mobile-nav');
 
 window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 80), { passive: true });
 
-function smoothScrollTo(el) {
+/* Offset by the fixed header, otherwise every anchor lands with the target's
+   heading hidden behind the nav. Read from the element so the 80px desktop and
+   64px mobile heights both work without hardcoding either. */
+function navOffset() {
+  return (nav ? nav.offsetHeight : 80) + 16;
+}
+
+function smoothScrollTo(el, opts) {
   const start = window.scrollY;
-  const end = el.getBoundingClientRect().top + window.scrollY;
+  const raw = el.getBoundingClientRect().top + window.scrollY;
+  const end = (opts && opts.top === true) ? 0 : Math.max(0, raw - navOffset());
   const dist = end - start;
   const isMobile = window.matchMedia('(pointer: coarse)').matches;
   const duration = isMobile
@@ -1692,7 +2057,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     if (!href || href === '#') {
       e.preventDefault();
       if (this.closest('#mobile-nav')) closeNav();
-      smoothScrollTo(document.body);
+      smoothScrollTo(document.body, { top: true });
       return;
     }
     const target = document.querySelector(href);
@@ -1715,18 +2080,22 @@ function openNav() {
   navOpen.setAttribute('aria-label', 'Затвори меню');
   setTimeout(() => document.getElementById('mobile-close').focus(), 50);
 }
-function closeNav() {
+/* Focus returns to the hamburger on every close path, not just Escape.
+   Closing by the X button or by tapping a link previously left focus
+   detached at the top of the document. */
+function closeNav(restoreFocus = true) {
   mobileNav.classList.remove('open');
   navOpen.classList.remove('is-open');
   document.body.style.overflow = '';
   navOpen.setAttribute('aria-expanded', 'false');
   navOpen.setAttribute('aria-label', 'Отвори меню');
+  if (restoreFocus) navOpen.focus({ preventScroll: true });
 }
 navOpen.addEventListener('click', () => mobileNav.classList.contains('open') ? closeNav() : openNav());
 document.getElementById('mobile-close').addEventListener('click', closeNav);
 mobileNav.querySelectorAll('a:not([href^="#"])').forEach(a => a.addEventListener('click', closeNav));
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && mobileNav.classList.contains('open')) { closeNav(); navOpen.focus(); return; }
+  if (e.key === 'Escape' && mobileNav.classList.contains('open')) { closeNav(); return; }
   if (e.key !== 'Tab' || !mobileNav.classList.contains('open')) return;
   const focusable = Array.from(mobileNav.querySelectorAll('a, button')).filter(el => !el.closest('[aria-hidden="true"]'));
   const first = focusable[0], last = focusable[focusable.length - 1];
@@ -1740,47 +2109,83 @@ document.addEventListener('keydown', e => {
 /* ============================================================
    HERO SLIDESHOW
    ============================================================ */
+/* Fully automatic: no dots, no pause button, no state to track beyond the
+   index and the timer. Reduced motion stops the rotation entirely rather than
+   speeding it up, which is the escape hatch now that there is no control. */
 const heroPanels = document.querySelectorAll('.hero-panel');
-const heroDots = document.querySelectorAll('.hero-dot');
 let hIdx = 0, hTimer;
 
 function gotoHero(i) {
   heroPanels[hIdx].classList.remove('active');
   hIdx = (i + heroPanels.length) % heroPanels.length;
   heroPanels[hIdx].classList.add('active');
-  heroPanels.forEach((p, idx) => p.setAttribute('aria-hidden', idx !== hIdx ? 'true' : 'false'));
-  heroDots.forEach((d, idx) => {
-    d.classList.toggle('active', idx === hIdx);
-    d.setAttribute('aria-selected', idx === hIdx ? 'true' : 'false');
+  /* `inert` as well as aria-hidden. The off-screen panels each hold two CTA
+     links; at opacity 0 they were invisible but still in the tab order, so a
+     keyboard user tabbed through six buttons to reach the two on screen, and
+     aria-hidden on a focusable subtree is itself a WCAG failure. */
+  heroPanels.forEach((p, idx) => {
+    const off = idx !== hIdx;
+    p.setAttribute('aria-hidden', off ? 'true' : 'false');
+    p.inert = off;
   });
 }
-function startHero() { hTimer = setInterval(() => gotoHero(hIdx + 1), 6000); }
-heroDots.forEach((dot, i) => dot.addEventListener('click', () => { clearInterval(hTimer); gotoHero(i); startHero(); }));
+
+function startHero() {
+  clearInterval(hTimer);
+  if (reduceMotion.matches) return;
+  hTimer = setInterval(() => gotoHero(hIdx + 1), 6000);
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden) clearInterval(hTimer); else startHero(); });
+
+heroPanels.forEach((p, idx) => { p.inert = idx !== hIdx; });
 startHero();
+
+/* Video starts only after the page has loaded, and never under reduced
+   motion. The poster carries the hero until then. */
+const heroVideo = document.getElementById('hero-video');
+if (heroVideo && !reduceMotion.matches) {
+  const playHero = () => { heroVideo.play().catch(() => {}); };
+  if (document.readyState === 'complete') playHero();
+  else window.addEventListener('load', playHero, { once: true });
+}
 
 /* ============================================================
    TESTIMONIALS CAROUSEL
    ============================================================ */
 const TESTIMONIALS = [
   { name:'Снежана Маринова', location:'Пловдив, Център', text:'Най-доброто кисело мляко, което съм яла от години. Маслините са различни, среща се качеството. Препоръчвам го на всички мои познати.' },
+  /* "Идвам тук всяка сутрин" is this customer's own visiting habit, not a
+     claim about how often stock arrives, so weekly delivery does not make it
+     false. Kept verbatim. The two reviews that did assert daily product
+     arrival were removed rather than reworded. */
   { name:'Мария Костова',    location:'Пловдив, Тракия', text:'Идвам тук всяка сутрин от две години. Млякото и киселото мляко са несравнимо по-добри от всичко в супермаркета. Истинска разлика се среща веднага.' },
   { name:'Иван Петров',      location:'Пловдив, Център', text:'Намерих сирена и маслини, каквито не можах да намеря никъде другаде. Персоналът е изключително любезен и винаги помага с избора.' },
-  { name:'Елена Стоянова',   location:'Белащица',        text:'Пресни яйца всеки ден, прекрасен избор от сирена и маслини, всичко под един покрив. Децата ми обожават млякото оттук.' },
   { name:'Георги Алиев',     location:'Горни Воден',     text:'Страхотен магазин! Сиренето е невероятно пресно и вкусно. Идвам специално от другия край на Пловдив, струва си всеки път.' },
-  { name:'Димитър Попов',    location:'Костиево',         text:'Специализиран магазин с истинско отношение. Продуктите пристигат пресно всяка сутрин. Качеството се усеща веднага. Препоръчвам на всички.' },
   { name:'Петя Василева',    location:'Пловдив, Център', text:'Обслужването е на ниво и продуктите са с несравнимо качество. Веднъж опиташ ли разликата, не можеш да се върнеш към супермаркета.' },
   { name:'Николай Димитров', location:'Пловдив, Смирненски', text:'Истинска находка за Пловдив. Пресно, качествено и на достъпна цена. Вече са ни любимият магазин за млечни продукти.' }
 ];
 
-const track    = document.getElementById('testimonials-track');
-const viewport = document.getElementById('testimonials-viewport');
-let visCount = 3, cIdx = 0, cGap = 0, cOffset = 0, cAuto, touchX0 = 0, isAnimating = false, prevW = window.innerWidth;
+const track            = document.getElementById('testimonials-track');
+const viewport         = document.getElementById('testimonials-viewport');
+const testimonialsWrap = document.getElementById('testimonials-wrap');
+const carouselStatus   = document.getElementById('carousel-status');
+let visCount = 3, cloneCount = 4, cIdx = 0, cGap = 0, cOffset = 0, cAuto,
+    isAnimating = false, animGuard = null, prevW = window.innerWidth,
+    settling = false, cQueue = [];
+const C_QUEUE_MAX = 3;   /* steps that may stack up behind an in-flight move */
 
 function getVis() { return window.innerWidth < 768 ? 1 : window.innerWidth < 1024 ? 2 : 3; }
 
-function buildCarousel() {
+function buildCarousel(keepLogical = 0) {
   track.innerHTML = '';
   visCount = getVis();
+  /* One clone MORE than the number of visible cards. On mobile the active card
+     is centred at 78% width, so slivers of both neighbours are visible; with
+     only `visCount` clones there is nothing beyond the trailing clone and the
+     peek renders as a blank strip for the whole transition. Uniform at every
+     breakpoint — desktop only ever needed `visCount` because cOffset is 0
+     there, and the extra clone is harmless. */
+  cloneCount = visCount + 1;
   TESTIMONIALS.forEach(t => {
     const c = document.createElement('div');
     c.className = 'testimonial-card';
@@ -1800,32 +2205,95 @@ function buildCarousel() {
     cGap = cw + gap;
     cOffset = isMobileCarousel ? Math.round((viewport.offsetWidth - cw) / 2) : 0;
 
-    const cloneB = cards.slice(-visCount).map(c => { const cl = c.cloneNode(true); cl.setAttribute('aria-hidden','true'); return cl; });
-    const cloneA = cards.slice(0, visCount).map(c => { const cl = c.cloneNode(true); cl.setAttribute('aria-hidden','true'); return cl; });
-    cloneB.forEach(c => track.insertBefore(c, track.firstChild));
+    const cloneB = cards.slice(-cloneCount).map(c => { const cl = c.cloneNode(true); cl.setAttribute('aria-hidden','true'); return cl; });
+    const cloneA = cards.slice(0, cloneCount).map(c => { const cl = c.cloneNode(true); cl.setAttribute('aria-hidden','true'); return cl; });
+    /* A DocumentFragment, NOT insertBefore-in-a-loop. Inserting each leading
+       clone at firstChild put them in reverse order, so track index
+       cloneCount-1 held the FIRST trailing card instead of the last. Wrapping
+       backwards then animated into the wrong review and settleC() teleported
+       to the right one — the visible snap. On mobile the same reversal shifted
+       the left peek across the forward wrap. The prefix must read
+       [r(n-k) … r(n-1)] so that index cloneCount-1 is the slide immediately
+       before the first real one. */
+    const lead = document.createDocumentFragment();
+    cloneB.forEach(c => lead.appendChild(c));
+    track.insertBefore(lead, track.firstChild);
     cloneA.forEach(c => track.appendChild(c));
 
-    cIdx = visCount;
+    cIdx = cloneCount + keepLogical;   /* survive an orientation change mid-read */
+    clearAnimGuard();
     isAnimating = false;
+    settling = false;
+    cQueue.length = 0;
     track.style.transition = 'none';
     track.style.transform = `translateX(${-(cIdx * cGap) + cOffset}px)`;
+    announceSlide();
   });
 }
 
+function clearAnimGuard() { if (animGuard) { clearTimeout(animGuard); animGuard = null; } }
+
+/* Rapid input is queued, not dropped. The old `if (isAnimating) return`
+   swallowed every click landing inside the 500ms transition, so ten fast
+   clicks moved one card. Steps are replayed in order from settleC(); the cap
+   stops a long backlog from running on after the user has stopped. */
+function queueC(dir) {
+  if (isAnimating) {
+    if (cQueue.length < C_QUEUE_MAX) cQueue.push(dir);
+    return;
+  }
+  goC(cIdx + dir);
+}
+
 function goC(i) {
-  if (isAnimating) return;
+  if (isAnimating || !cGap) return;
   isAnimating = true;
   cIdx = i;
   track.style.transition = 'transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94)';
   track.style.transform = `translateX(${-(cIdx * cGap) + cOffset}px)`;
+  /* Watchdog. isAnimating was previously cleared ONLY by transitionend, so a
+     transition that never completes — tab backgrounded mid-move, or a zero
+     measurement — froze the carousel permanently. */
+  clearAnimGuard();
+  animGuard = setTimeout(settleC, 650);
 }
 
-track.addEventListener('transitionend', () => {
+/* Re-entrant guard: both transitionend and the watchdog can land here for the
+   same move, and a second pass would wrap an already-wrapped index. */
+function settleC() {
+  if (settling) return;
+  settling = true;
+  clearAnimGuard();
   const n = TESTIMONIALS.length;
-  if (cIdx >= n + visCount) { cIdx = visCount; track.style.transition = 'none'; track.style.transform = `translateX(${-(cIdx * cGap) + cOffset}px)`; }
-  else if (cIdx < visCount) { cIdx = n + visCount - 1; track.style.transition = 'none'; track.style.transform = `translateX(${-(cIdx * cGap) + cOffset}px)`; }
+  /* Wrap conditions are expressed in terms of cloneCount, NOT visCount.
+     Using visCount here leaves the backward wrap firing at track index 0,
+     where nothing exists to the left — the original blank-strip bug. */
+  if (cIdx >= n + cloneCount || cIdx < cloneCount) {
+    if (cIdx >= n + cloneCount) cIdx -= n; else cIdx += n;
+    track.style.transition = 'none';
+    track.style.transform = `translateX(${-(cIdx * cGap) + cOffset}px)`;
+    void track.offsetWidth;             /* commit the jump before re-enabling */
+  }
   isAnimating = false;
+  settling = false;
+  announceSlide();
+  const next = cQueue.shift();
+  if (next !== undefined) goC(cIdx + next);
+}
+
+track.addEventListener('transitionend', e => {
+  /* Only the track's own transform ends a slide. Nothing inside a testimonial
+     card transitions today, but sibling cards elsewhere on the page do, so
+     this stops a future hover effect from driving the wrap logic. */
+  if (e.target !== track || e.propertyName !== 'transform') return;
+  settleC();
 });
+
+function announceSlide() {
+  const n = TESTIMONIALS.length;
+  const human = ((cIdx - cloneCount) % n + n) % n + 1;
+  if (carouselStatus) carouselStatus.textContent = `Отзив ${human} от ${n}`;
+}
 
 ['carousel-next','carousel-prev'].forEach(id => {
   const btn = document.getElementById(id);
@@ -1834,28 +2302,48 @@ track.addEventListener('transitionend', () => {
   btn.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') btn.classList.add('carousel-arrow--active'); });
   btn.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') btn.classList.remove('carousel-arrow--active'); });
   btn.addEventListener('click', function() {
-    clearCauto(); goC(cIdx + dir); startCauto();
+    queueC(dir); restartCauto();
     btn.classList.add('carousel-arrow--active');
     clearTimeout(tapTimer);
     tapTimer = setTimeout(() => btn.classList.remove('carousel-arrow--active'), 450);
   });
 });
 
-function startCauto() { cAuto = setInterval(() => goC(cIdx + 1), 5000); }
-function clearCauto() { clearInterval(cAuto); }
+/* Always clear before setting. Mixing touch with synthesized mouse events used
+   to orphan intervals whose id was no longer held in cAuto, leaving them
+   running for the life of the page and producing erratic pacing. */
+function startCauto() {
+  clearInterval(cAuto);
+  if (reduceMotion.matches || document.hidden) return;
+  cAuto = setInterval(() => queueC(1), 5000);
+}
+function clearCauto()   { clearInterval(cAuto); }
+function restartCauto() { clearCauto(); startCauto(); }
 
 viewport.addEventListener('mouseenter', clearCauto);
 viewport.addEventListener('mouseleave', startCauto);
+testimonialsWrap.addEventListener('focusin',  clearCauto);
+testimonialsWrap.addEventListener('focusout', startCauto);
 
-viewport.addEventListener('touchstart', e => { touchX0 = e.touches[0].clientX; clearCauto(); }, { passive: true });
-viewport.addEventListener('touchend',   e => { const d = touchX0 - e.changedTouches[0].clientX; if (Math.abs(d) > 50) goC(cIdx + (d > 0 ? 1 : -1)); startCauto(); }, { passive: true });
+/* Returning to a backgrounded tab also rescues a transition that never
+   delivered transitionend, which is the other half of the freeze. */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { clearCauto(); return; }
+  if (isAnimating) settleC();
+  startCauto();
+});
+
+/* Swipe navigation is deliberately absent: reviews advance only via the
+   arrows. `touch-action: pan-y` on the viewport keeps the page scrolling
+   vertically over the carousel. WCAG 2.5.7 is satisfied by the arrows. */
 
 buildCarousel();
 startCauto();
 window.addEventListener('resize', () => {
   if (window.innerWidth === prevW) return;
   prevW = window.innerWidth;
-  clearCauto(); buildCarousel(); startCauto();
+  const logical = ((cIdx - cloneCount) % TESTIMONIALS.length + TESTIMONIALS.length) % TESTIMONIALS.length;
+  clearCauto(); buildCarousel(logical); startCauto();
 });
 
 </script>
@@ -1866,7 +2354,7 @@ window.addEventListener('resize', () => {
   "@type": "GroceryStore",
   "name": "Млечко",
   "description": "Специализиран магазин за пресни млечни продукти, яйца и маслини в Пловдив.",
-  "url": "https://mlechko.bg",
+  "url": "https://www.mlechko-magazin.com",
   "telephone": "+359878232365",
   "email": "lazarinrusinov@gmail.com",
   "address": {
@@ -1886,7 +2374,7 @@ window.addEventListener('resize', () => {
     "longitude": 24.7308872
   },
   "hasMap": "https://maps.app.goo.gl/TggEzeMfNA7kNr5u5",
-  "image": "https://mlechko.bg/Enhanced%20images/HomePage%20Header.png"
+  "image": "https://www.mlechko-magazin.com/images/og-cover.jpg"
 }
 </script>
 
@@ -1908,12 +2396,12 @@ window.addEventListener('resize', () => {
     {
       "@type": "Question",
       "name": "Какви продукти предлагате?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Над 30 вида пресни млечни продукти, яйца и маслини, събрани от доверени производители." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Над 100 вида пресни млечни продукти, яйца и маслини, събрани от доверени производители." }
     },
     {
       "@type": "Question",
-      "name": "Всеки ден ли пристигат пресни продукти?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Да. Продуктите пристигат директно от производителите всяка сутрин до 6:00, без посредници." }
+      "name": "Колко често пристигат пресни продукти?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Доставките са седмични — продуктите пристигат директно от производителите, без посредници и без дълъг престой по рафтовете." }
     },
     {
       "@type": "Question",

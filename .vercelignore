@@ -11,3 +11,18 @@ package.json
 package-lock.json
 components/
 brand_assets/
+WEBSITE_IMPROVEMENT_REPORT.md
+AUDIT_REPORT.md
+FIXES_PLAN.md
+
+# Source assets. Kept in the repo as the masters for the optimised
+# derivatives in images/ and media/, but never served to visitors.
+Enhanced images/
+Hero video.mp4
+images/IMG_0702.jpg
+images/number 2.jpg
+images/Side of store image.jpg
+images/hero-header.jpg
+images/Mlechko-Logo.png
+images/Viber Icon.png
+measure-bytes.sh
