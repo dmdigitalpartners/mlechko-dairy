@@ -366,7 +366,6 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   outline-offset: 3px;
 }
 .nav-cta:active { transform: translateY(0); box-shadow: none; }
-.nav-call { display: none; }
 .nav-hamburger {
   display: none; flex-direction: column; gap: 5px; padding: 6px; cursor: pointer;
 }
@@ -377,6 +376,12 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 .nav-hamburger.is-open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
 .nav-hamburger.is-open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
 .nav-hamburger.is-open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* The fixed header (z-index 1000) paints over the overlay (999) — that is what
+   lets the real logo keep its place in the menu's top bar. The CTA showing
+   through as well would put a second "Свържете се" a thumb's width from the one
+   at the foot of the menu, so it steps aside while the menu is open. */
+.nav-inner:has(.nav-hamburger.is-open) .nav-cta { display: none; }
 
 /* Mobile nav */
 .mobile-nav {
@@ -395,15 +400,21 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   border-bottom: 1px solid rgba(255,255,255,0.07);
 }
 .mobile-nav-logo img { width: 120px; height: auto; opacity: 0.9; }
-/* auto, not hidden: on short viewports the links + slogan + socials +
-   address + hours exceed the flex space and the lower half became
-   unreachable rather than scrollable. */
-.mobile-nav-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+/* auto, not hidden: on short viewports the links plus the address and hours
+   exceed the flex space and the lower half became unreachable rather than
+   scrollable. */
+.mobile-nav-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; }
 .mobile-nav-links {
   list-style: none; width: 100%; padding: 8px 0;
   display: flex; flex-direction: column; gap: 0;
+  flex: 1 1 auto;
 }
+/* The rows take back the space the slogan and the socials row used to occupy,
+   rather than leaving it as a void above the CTA — capped so a tall viewport
+   does not stretch six links into six panels, and floored at the height they
+   had before so a short one still scrolls instead of squashing them. */
 .mobile-nav-links li {
+  flex: 1 1 auto; min-height: 64px; max-height: 100px; display: flex;
   opacity: 0; transform: translateY(14px);
   transition: opacity 0.3s ease, transform 0.3s ease;
   border-bottom: 1px solid rgba(255,255,255,0.04);
@@ -416,7 +427,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 .mobile-nav.open .mobile-nav-links li:nth-child(6) { opacity:1; transform:none; transition-delay:0.36s; }
 .mobile-nav-links a {
   font-size: 1.25rem; font-weight: 500; color: rgba(255,255,255,0.88);
-  display: flex; align-items: center;
+  display: flex; align-items: center; flex: 1;
   padding: 14px 24px;
   letter-spacing: -0.01em;
   transition: color 0.2s ease, padding-left 0.2s ease;
@@ -449,27 +460,8 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 .mobile-nav-close:hover { color: #fff; background: rgba(255,255,255,0.07); }
 .mobile-nav-close:focus-visible { outline: 2px solid var(--color-sage); outline-offset: 2px; }
 
-.mobile-nav-slogan {
-  font-family: var(--font-display); font-style: italic;
-  font-size: 0.85rem; color: rgba(255,255,255,0.28);
-  text-align: center; padding: 12px 24px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  letter-spacing: 0.01em; line-height: 1.6;
-  opacity: 0; transform: translateY(10px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-.mobile-nav.open .mobile-nav-slogan { opacity: 1; transform: none; transition-delay: 0.30s; }
-.mobile-nav-socials {
-  display: flex; justify-content: center; gap: 16px;
-  padding: 16px 24px;
-  opacity: 0; transform: translateY(10px);
-  transition: opacity 0.3s ease 0.33s, transform 0.3s ease 0.33s;
-}
-.mobile-nav.open .mobile-nav-socials { opacity: 1; transform: none; }
-.mobile-nav-socials a[aria-label="Viber"] { background: #7360F2; border-color: #7360F2; padding: 0; overflow: hidden; }
-.mobile-nav-socials a[aria-label="Viber"] img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .mobile-nav-compact-info {
-  padding: 12px 24px 16px;
+  padding: 16px 24px 20px;
   border-top: 1px solid rgba(255,255,255,0.06);
   display: flex; flex-direction: column; gap: 6px;
   opacity: 0; transform: translateY(10px);
@@ -894,36 +886,6 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
    fullest. The wide tile needs nothing: its subject is already centred. */
 .store-tile--port img { object-position: center 32%; }
 
-/* --- gallery controls (mobile only; see the carousel block below) --- */
-.store-nav { display: none; }
-.store-arrow {
-  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-  border: 1.5px solid rgba(61,99,64,0.45); background: transparent;
-  display: flex; align-items: center; justify-content: center;
-  color: #3d6340;
-  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, opacity 0.3s ease;
-}
-/* The reviews carousel's gold arrows are reused nowhere here on purpose: on
-   this section's #F4F1EC the gold measures about 1.9:1, which is not a control
-   anyone can see. #3d6340 is the section's own green and measures ~6.4:1. */
-.store-arrow:hover:not(:disabled) { background: #3d6340; border-color: #3d6340; color: #fff; }
-.store-arrow:active:not(:disabled) { background: #3d6340; border-color: #3d6340; color: #fff; }
-.store-arrow:focus-visible { outline: 2px solid #3d6340; outline-offset: 3px; }
-.store-arrow:disabled { opacity: 0.28; cursor: default; }
-.store-dots { display: flex; align-items: center; gap: 2px; }
-.store-dot {
-  width: 24px; height: 24px; padding: 0; border: none; background: none;
-  display: flex; align-items: center; justify-content: center;
-  -webkit-tap-highlight-color: transparent;
-}
-.store-dot::before {
-  content: ''; width: 7px; height: 7px; border-radius: 50%;
-  background: rgba(61,99,64,0.28);
-  transition: background 0.3s ease, transform 0.3s ease;
-}
-.store-dot.is-current::before { background: #3d6340; transform: scale(1.4); }
-.store-dot:focus-visible { outline: 2px solid #3d6340; outline-offset: 1px; border-radius: 50%; }
-
 /* ============================================================
    FIND US
    ============================================================ */
@@ -1181,21 +1143,23 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   .nav-logo { margin-left: 0; }
   .nav-logo img { width: 120px; }
   .nav-links { display: none; }
-  .nav-cta { display: none; }
   .nav-hamburger { display: flex; }
-  /* The number itself, not a second phone glyph. 44px min-height keeps the
-     touch target legal while the text sits on the header's baseline. */
-  .nav-call {
-    display: inline-flex; align-items: center;
-    margin-left: auto; margin-right: 12px;
-    padding: 8px 2px; min-height: 44px;
-    font-size: 0.86rem; font-weight: 600; letter-spacing: -0.01em;
-    color: #3d6340; white-space: nowrap;
+  /* The desktop CTA itself, scaled down — not a separate mobile control. It
+     keeps the same label, the same tel: target and the same tracking hook, so
+     the highest-intent action reads as an action instead of as a phone number
+     the visitor has to recognise. Sits between the logo and the hamburger. */
+  .nav-cta {
+    display: inline-flex;
+    margin-left: auto; margin-right: 10px;
+    gap: 6px; padding: 10px 14px; min-height: 42px;
+    font-size: 0.68rem; letter-spacing: 0.04em;
+    white-space: nowrap;
     -webkit-tap-highlight-color: transparent;
-    transition: color 0.2s ease;
   }
-  .nav-call:active { color: #2f4d32; }
-  .nav-call:focus-visible { outline: 2px solid var(--color-sage); outline-offset: 3px; border-radius: 3px; }
+  /* A translateY hover state sticks after a tap on touch, so the press
+     feedback is a colour change instead. */
+  .nav-cta:hover { transform: none; box-shadow: none; background: #4d7a50; }
+  .nav-cta:active { transform: none; background: #3d6340; }
 
   /* --- HERO --- */
   .hero { height: calc(100vh - 272px); min-height: 420px; }
@@ -1209,8 +1173,9 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   /* --- STATS --- */
   /* Three items fit by reclaiming space, not by shrinking type: the dividers
      and their surrounding padding are dropped for a grid gap, which is where
-     the width comes from. The label holds at 0.69rem (~11px) — the readable
-     floor — at every width down to 320px. */
+     the width comes from. The label then steps down to the same 0.63rem the
+     desktop rule uses, so it reads as a caption under the number rather than
+     competing with it. */
   .stats-bar { height: auto; min-height: unset; padding: 24px 0; }
   .stats-container {
     display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1230,7 +1195,7 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   .stat-icon { width: 18px; height: 18px; margin-bottom: 6px; }
   .stat-number { font-size: 1.3rem; }
   .stat-unit { font-size: 0.6em; }
-  .stat-label { font-size: 0.69rem; letter-spacing: 0.06em; line-height: 1.4; }
+  .stat-label { font-size: 0.63rem; letter-spacing: 0.06em; line-height: 1.4; }
 
   /* --- ABOUT --- */
   .section-about { padding: 80px 24px 0; }
@@ -1266,41 +1231,37 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   .feature-text .feature-title { font-size: 1.45rem; }
   .feature-trust-strip { margin-top: 1.25rem; padding-top: 1.1rem; gap: 8px; }
 
-  /* --- STORE SHOWCASE — carousel --- */
-  /* Scroll-snap rather than a transform track. The browser already does
-     momentum, snapping and swipe properly, so the arrows only have to call
-     scrollBy — and with no script at all the strip is still swipeable. The
-     overflow lives on the track, so the page itself never scrolls sideways.
-     Every slide is square, the ratio the mobile review cards already use: the
-     seven photographs are mixed orientation, and one shared frame is what
-     guarantees the height never changes between them. */
+  /* --- STORE SHOWCASE — static catalogue --- */
+  /* The scroll-snap conveyor forced every slide into one square frame, which
+     cropped the two counter panoramas to their middle third and cut the top
+     and bottom shelves off the four upright fridges — 44% to 124% of each
+     frame thrown away to make the heights match.
+     A catalogue instead, packed by shape. Vertical cost scales with tile
+     width, so the panoramas are cheap side by side and ruinous full width,
+     while the uprights are the height sink: pairing like with like is what
+     keeps the section from running away. The featured counter shot leads at
+     full width; height:auto lets the two panoramas resolve their own ratio
+     from the img width/height attributes, so nothing is cropped and nothing
+     shifts as they load; the four uprights share 423/887, which is the exact
+     ratio of two of them and costs the other two a sliver of ceiling and
+     floor. Every shelf, price tag and hand-written sign stays readable. */
   .section-store { padding: 60px 24px 0; }
   .store-gallery { padding-bottom: 60px; }
   .store-grid {
-    display: flex; gap: 12px;
-    overflow-x: auto; overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none; -ms-overflow-style: none;
-    -webkit-overflow-scrolling: touch;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    align-items: start;
   }
-  .store-grid::-webkit-scrollbar { display: none; }
   .store-tile,
-  .store-tile--wide,
   .store-tile--land,
-  .store-tile--port {
-    flex: 0 0 100%; grid-column: auto; grid-row: auto;
-    /* `start`, not `center`. The slides are exactly as wide as the track, so
-       there is nothing to centre — and centre would have snapped to a position
-       half a gap away from the one scrollTo() aims the arrows at, leaving the
-       two fighting each other by 6px on every press. */
-    aspect-ratio: 1 / 1; scroll-snap-align: start;
-  }
-  /* Below the photograph, never over it — no control has to fight a picture
-     for contrast, which is the same move the reviews arrows make on mobile. */
-  .store-nav {
-    display: flex; align-items: center; justify-content: center;
-    gap: 14px; padding: 18px 0 2px;
-  }
+  .store-tile--port { grid-column: span 1; grid-row: auto; aspect-ratio: auto; }
+  .store-tile--wide { grid-column: 1 / -1; grid-row: auto; aspect-ratio: auto; }
+  .store-tile--wide img,
+  .store-tile--land img { height: auto; }
+  .store-tile--port { aspect-ratio: 423 / 887; }
+  /* Near enough to the source ratio that there is nothing to bias towards. */
+  .store-tile--port img { object-position: center; }
 
   /* --- TESTIMONIALS --- */
   .section-testimonials { padding: 64px 0 0; }
@@ -1313,18 +1274,24 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
     display: flex; justify-content: center; gap: 20px;
     padding: 20px 0 4px; pointer-events: all;
   }
-  /* Square cards. align-items must leave `stretch`, or the track's default
-     would set the height and aspect-ratio would never apply. The card's width
-     is already a px value from JS, so the ratio resolves off that. Content is
-     centred vertically because the quotes differ in length and a square box
-     is taller than the shortest of them needs. */
-  .testimonials-track { align-items: flex-start; }
+  /* The square is a floor, not a fixed height. `aspect-ratio: 1/1` resolved
+     against the px width JS writes on the card, which gave the box a height
+     the copy could not push against: a long quote overflowed it, and because
+     the column is centre-justified the overflow spilled equally past both
+     edges for `overflow: hidden` to cut — hence clipping at the top AND the
+     bottom. At 320px the longest review cleared its own box by under one line
+     of leading, so any difference in font metrics tipped it over.
+     min-height keeps the square proportion when a quote is short; a longer
+     quote makes the card taller instead of being cut. align-items: stretch
+     then levels every card to the tallest, so the copy always has room inside
+     its own box and the cards stay the same size slide to slide. */
+  .testimonials-track { align-items: stretch; }
   .testimonial-card {
-    aspect-ratio: 1 / 1; min-height: 0; overflow: hidden;
-    padding: 20px 22px;
+    aspect-ratio: auto; height: auto; min-height: 78vw;
+    padding: 22px;
     display: flex; flex-direction: column; justify-content: center;
   }
-  .t-text { font-size: clamp(0.76rem, 3.1vw, 0.85rem); line-height: 1.6; margin-bottom: 16px; }
+  .t-text { font-size: clamp(0.8rem, 3.2vw, 0.88rem); line-height: 1.6; margin-bottom: 16px; }
   .t-stars { margin-bottom: 10px; }
   .t-sep { margin-bottom: 10px; }
 
@@ -1353,19 +1320,20 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 /* ============================================================
    RESPONSIVE — NARROWEST PHONES
    Under ~360px the third stat's display word ("Директно") is the widest thing
-   in the row, and the square review card runs 1px over its own box. Both are
-   given back by trimming the display number and the card's padding — the stat
-   LABELS stay at 0.69rem (~11px) at every width.
+   in the row, and the header has to seat a logo, a CTA and a hamburger inside
+   280px. Both are given back by trimming — the display number, the card's
+   padding, and the CTA's horizontal padding and phone glyph. Type sizes are
+   the last thing cut, never the first.
    ============================================================ */
 @media (max-width: 360px) {
-  /* 7 dots at 24px plus two 44px arrows overruns a 320px viewport, so the dots
-     give back the 4px each; the arrows keep their 44px target. */
-  .store-nav { gap: 10px; }
-  .store-dot { width: 20px; height: 20px; }
+  /* Padding and the glyph, not the wording: the label still reads as the
+     action it performs. */
+  .nav-cta { padding: 9px 12px; margin-right: 8px; }
+  .nav-cta svg { display: none; }
   .stat-number { font-size: 1.12rem; }
   .stat-icon { width: 17px; height: 17px; margin-bottom: 5px; }
-  .stat-label { letter-spacing: 0.04em; }
-  .testimonial-card { padding: 16px 17px; }
+  .stat-label { font-size: 0.6rem; letter-spacing: 0.04em; }
+  .testimonial-card { padding: 18px; }
   .t-text { margin-bottom: 12px; }
   .t-stars { margin-bottom: 8px; }
   .t-sep { margin-bottom: 8px; }
@@ -1437,12 +1405,6 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.41 2 2 0 0 1 3.6 1.23h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.87a16 16 0 0 0 6 6l.86-1.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.41 15z"/></svg>
       Свържете се
     </a>
-    <!-- Mobile-only call action. The desktop CTA is hidden below 768px, which
-         left phones with nothing but a hamburger — the highest-intent action
-         on a shop site was two taps and a scroll away. The number is shown as
-         text rather than a second phone glyph: it reads as the shop's number
-         at a glance and costs no more width than the icon button did. -->
-    <a href="tel:0878232365" class="nav-call" data-cta="nav-call" aria-label="Обади се на 0878 232 365">0878 232 365</a>
     <button class="nav-hamburger" id="nav-open" aria-label="Отвори меню" aria-expanded="false" aria-controls="mobile-nav">
       <span></span><span></span><span></span>
     </button>
@@ -1465,16 +1427,9 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
       <li><a href="#categories">Продукти</a></li>
       <li><a href="#store">Нашият магазин</a></li>
       <li><a href="#testimonials">Отзиви</a></li>
-      <li><a href="#faq">Често задавани въпроси</a></li>
+      <li><a href="#faq" aria-label="Често задавани въпроси">ЧЗБ</a></li>
       <li><a href="#visit">Контакти</a></li>
     </ul>
-    <p class="mobile-nav-slogan">„Нищо повече и нищо по-малко."</p>
-    <div class="mobile-nav-socials">
-      <!-- TODO: add Facebook and Instagram links once real profile URLs are available -->
-      <a href="viber://chat?number=%2B359878232365" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Viber">
-        <img src="images/viber-120.webp" alt="" aria-hidden="true" width="40" height="40" loading="lazy" decoding="async">
-      </a>
-    </div>
     <div class="mobile-nav-compact-info">
       <div class="mobile-nav-compact-info-address">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -1867,20 +1822,20 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
     </figure>
     <figure class="store-tile store-tile--land reveal-img">
       <picture>
-        <source type="image/avif" srcset="images/store-sirene-600.avif 600w, images/store-sirene-1200.avif 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 590px">
-        <img src="images/store-sirene-1200.webp" srcset="images/store-sirene-600.webp 600w, images/store-sirene-1200.webp 1200w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 590px" width="1200" height="553" alt="Витрина с бяло саламурено сирене, извара и кисело мляко в тави" loading="lazy" decoding="async">
+        <source type="image/avif" srcset="images/store-sirene-600.avif 600w, images/store-sirene-1200.avif 1200w" sizes="(max-width: 768px) calc((100vw - 58px) / 2), (max-width: 1024px) calc(100vw - 96px), 590px">
+        <img src="images/store-sirene-1200.webp" srcset="images/store-sirene-600.webp 600w, images/store-sirene-1200.webp 1200w" sizes="(max-width: 768px) calc((100vw - 58px) / 2), (max-width: 1024px) calc(100vw - 96px), 590px" width="1200" height="553" alt="Витрина с бяло саламурено сирене, извара и кисело мляко в тави" loading="lazy" decoding="async">
       </picture>
     </figure>
     <figure class="store-tile store-tile--land reveal-img">
       <picture>
-        <source type="image/avif" srcset="images/store-olives-400.avif 400w, images/store-olives-800.avif 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 590px">
-        <img src="images/store-olives-800.webp" srcset="images/store-olives-400.webp 400w, images/store-olives-800.webp 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 590px" width="800" height="450" alt="Щанд с маслини в тави: каламата, гемлик, услу и стафидари, с ръчно написани табелки" loading="lazy" decoding="async">
+        <source type="image/avif" srcset="images/store-olives-400.avif 400w, images/store-olives-800.avif 800w" sizes="(max-width: 768px) calc((100vw - 58px) / 2), (max-width: 1024px) calc(100vw - 96px), 590px">
+        <img src="images/store-olives-800.webp" srcset="images/store-olives-400.webp 400w, images/store-olives-800.webp 800w" sizes="(max-width: 768px) calc((100vw - 58px) / 2), (max-width: 1024px) calc(100vw - 96px), 590px" width="800" height="450" alt="Щанд с маслини в тави: каламата, гемлик, услу и стафидари, с ръчно написани табелки" loading="lazy" decoding="async">
       </picture>
     </figure>
     <figure class="store-tile store-tile--port reveal-img">
       <picture>
-        <source type="image/avif" srcset="images/store-milk-400.avif 400w, images/store-milk-800.avif 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 112px) / 2), 285px">
-        <img src="images/store-milk-800.webp" srcset="images/store-milk-400.webp 400w, images/store-milk-800.webp 800w" sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc((100vw - 112px) / 2), 285px" width="800" height="1730" alt="Хладилник с прясно мляко в бутилки, кисело мляко и сметана" loading="lazy" decoding="async">
+        <source type="image/avif" srcset="images/store-milk-400.avif 400w, images/store-milk-800.avif 800w" sizes="(max-width: 768px) calc((100vw - 58px) / 2), (max-width: 1024px) calc((100vw - 112px) / 2), 285px">
+        <img src="images/store-milk-800.webp" srcset="images/store-milk-400.webp 400w, images/store-milk-800.webp 800w" sizes="(max-width: 768px) calc((100vw - 58px) / 2), (max-width: 1024px) calc((100vw - 112px) / 2), 285px" width="800" height="1730" alt="Хладилник с прясно мляко в бутилки, кисело мляко и сметана" loading="lazy" decoding="async">
       </picture>
     </figure>
     <figure class="store-tile store-tile--port reveal-img">
@@ -1902,18 +1857,6 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
       </picture>
     </figure>
     </div>
-    <!-- Mobile only; display:none on wider screens takes it out of the
-         accessibility tree along with the layout. -->
-    <div class="store-nav">
-      <button class="store-arrow" id="store-prev" type="button" aria-label="Предишна снимка">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div class="store-dots" id="store-dots"></div>
-      <button class="store-arrow" id="store-next" type="button" aria-label="Следваща снимка">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    </div>
-    <p class="visually-hidden" id="store-status" role="status" aria-live="polite"></p>
   </div>
   <div class="wave-divider" aria-hidden="true">
     <svg viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -2617,98 +2560,6 @@ window.addEventListener('resize', () => {
   const logical = ((cIdx - cloneCount) % TESTIMONIALS.length + TESTIMONIALS.length) % TESTIMONIALS.length;
   clearCauto(); buildCarousel(logical); startCauto();
 });
-
-/* ============================================================
-   STORE GALLERY — MOBILE CAROUSEL
-   ============================================================ */
-/* Scroll-snap, not a transform track. The browser already handles momentum,
-   snapping and swipe correctly, so the arrows only have to call scrollTo —
-   there are no clones, no wrap bookkeeping and nothing that can desync. It also
-   degrades honestly: with this script gone the strip is still swipeable, which
-   a transform track is not.
-
-   Deliberately does NOT wrap. The reviews carousel loops because it advances
-   itself and a loop is the only sensible end; a photo gallery the visitor is
-   driving by hand should run out at the last photograph rather than silently
-   returning to the first. The arrows disable at the ends to say so.
-
-   Desktop runs all of this too, harmlessly: the grid does not overflow there,
-   so scrollLeft stays 0, and .store-nav is display:none. */
-const storeGrid = document.getElementById('store-grid');
-if (storeGrid) {
-  const storeDots   = document.getElementById('store-dots');
-  const storeStatus = document.getElementById('store-status');
-  const storePrev   = document.getElementById('store-prev');
-  const storeNext   = document.getElementById('store-next');
-  const storeTiles  = Array.from(storeGrid.querySelectorAll('.store-tile'));
-  const storeN      = storeTiles.length;
-
-  const storeBehavior = () => (reduceMotion.matches ? 'auto' : 'smooth');
-
-  /* Measured, not computed from an assumed tile width: the tiles are not all
-     the same element type and the gap is a CSS value this file should not have
-     to know twice. */
-  function tileOffset(i) {
-    return storeTiles[i].getBoundingClientRect().left
-         - storeGrid.getBoundingClientRect().left
-         + storeGrid.scrollLeft;
-  }
-
-  /* Nearest tile to the current position, rather than round(scrollLeft/width).
-     Rubber-banding at either end puts scrollLeft outside the real range, and
-     the division answer is wrong exactly there. */
-  function storeIndex() {
-    let best = 0, bestD = Infinity;
-    for (let i = 0; i < storeN; i++) {
-      const d = Math.abs(tileOffset(i) - storeGrid.scrollLeft);
-      if (d < bestD) { bestD = d; best = i; }
-    }
-    return best;
-  }
-
-  function goStore(i) {
-    const n = Math.min(storeN - 1, Math.max(0, i));
-    storeGrid.scrollTo({ left: tileOffset(n), behavior: storeBehavior() });
-  }
-
-  for (let i = 0; i < storeN; i++) {
-    const dot = document.createElement('button');
-    dot.className = 'store-dot';
-    dot.type = 'button';
-    dot.setAttribute('aria-label', `Снимка ${i + 1} от ${storeN}`);
-    dot.addEventListener('click', () => goStore(i));
-    storeDots.appendChild(dot);
-  }
-
-  function syncStore() {
-    const i = storeIndex();
-    Array.from(storeDots.children).forEach((dot, n) => {
-      dot.classList.toggle('is-current', n === i);
-      dot.setAttribute('aria-current', n === i ? 'true' : 'false');
-    });
-    const maxScroll = storeGrid.scrollWidth - storeGrid.clientWidth;
-    storePrev.disabled = storeGrid.scrollLeft <= 1;
-    storeNext.disabled = storeGrid.scrollLeft >= maxScroll - 1;
-    storeStatus.textContent = `Снимка ${i + 1} от ${storeN}`;
-  }
-
-  storePrev.addEventListener('click', () => goStore(storeIndex() - 1));
-  storeNext.addEventListener('click', () => goStore(storeIndex() + 1));
-
-  /* Debounced: scroll fires continuously through a swipe, and the dots only
-     need the answer once it settles. */
-  let storeTick;
-  storeGrid.addEventListener('scroll', () => {
-    clearTimeout(storeTick);
-    storeTick = setTimeout(syncStore, 90);
-  }, { passive: true });
-  window.addEventListener('resize', () => {
-    clearTimeout(storeTick);
-    storeTick = setTimeout(syncStore, 200);
-  }, { passive: true });
-
-  syncStore();
-}
 
 </script>
 
