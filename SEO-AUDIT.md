@@ -19,24 +19,60 @@ This pass therefore closed gaps rather than fixing a broken site. Three findings
 
 The business entity graph was also completed with verifiable data only.
 
+**Search Console context (now available):** the last-7-days export contains **13 impressions and 1 click**, with 73% of attributed impressions on the brand term alone and the site ranking **4.38 for its own name**. This is the profile of a site Google has only just started to understand. It confirms the entity-strengthening work in this pass was the right priority, and it is far too small a sample to justify rewriting titles or copy — so none were rewritten. Full analysis below.
+
 ---
 
 ## Search Console — last 7 days
 
-**Status: not analysed. Data unavailable.**
+Export: `mlechko-magazin.com-Performance-on-Search-2026-08-29.zip`, Web search, Last 7 days.
 
-The task specified a Search Console property URL but the placeholder was never replaced, and this environment has no Search Console connector. No query, CTR, position or impression data was available.
+| Metric | Value |
+|---|---:|
+| Clicks | **1** |
+| Impressions | **13** |
+| CTR | **7.69%** |
+| Average position | **5.31** |
 
-Everything in this report is therefore derived from source code, production HTTP behaviour, Lighthouse, and the schema.org vocabulary — never from guessed search data. **No title or meta description was rewritten**, because there is no evidence base to justify changing copy that may already be performing.
+### Read this section with the sample size in mind
 
-To unblock the query-driven half of the brief, export from the property and re-run:
+The window contains **13 impressions and 1 click**, and only **3 of 7 days carry any data at all** (23–26 August; 27–29 August are absent to Google's normal 2–3 day processing lag). Four queries are named; they account for 11 impressions, so **2 impressions are withheld** under Google's rare-query anonymisation.
 
-| Export | Range | Purpose |
-|---|---|---|
-| Performance → Queries | Last 7 days | Primary analysis window |
-| Performance → Pages | Last 7 days | Homepage vs legal-page split |
-| Performance → Queries | Previous 7 days | Trend vs noise |
-| Performance → Queries | Last 28 days | Context |
+At this volume almost nothing is statistically separable from noise. A 0% CTR on 8 impressions is exactly what you would expect from a query that converts at 10%, so it is **not** evidence of a CTR problem. This data is reported because it was asked for, and because it does say something useful about *discovery* — but it cannot carry a content or title strategy, and it was not used to justify one.
+
+### Queries
+
+| Query | Impressions | Clicks | CTR | Position | Intent |
+|---|---:|---:|---:|---:|---|
+| млечко | 8 | 0 | 0% | 4.38 | Branded |
+| магазини в пловдив | 1 | 0 | 0% | 2.0 | Local category |
+| млечен магазин | 1 | 0 | 0% | 4.0 | Category |
+| производител на яйца | 1 | 0 | 0% | 21.0 | Product — **mismatched** |
+| *(anonymised)* | 2 | 1 | — | — | unknown |
+
+### What this actually tells us
+
+**1. Google barely knows the site yet.** Thirteen impressions in a week is the profile of a site that has only recently been indexed or recently changed domain. This is the single most important context for everything else here.
+
+**2. Discovery is almost entirely branded.** The brand term is 8 of 11 attributed impressions — **73%**. Non-branded discovery amounts to three impressions. There is no meaningful product or category visibility to optimise yet.
+
+**3. The site ranks 4.38 for its own name.** A business should rank first for its own brand. This is the clearest signal in the export, and it is an *entity-strength* problem rather than a copy problem — which is precisely what this pass addressed: stable `@id`, `logo`, `legalName`, ЕИК, `areaServed` and a `WebSite` node tying the site to the business. Note also that for a physical shop, brand searches often resolve inside the Maps panel — the searcher calls or gets directions without ever clicking the website — so some of that 0% is structural, not fixable on-site.
+
+**4. `производител на яйца` ("egg producer") at position 21 is Google mis-modelling the business.** Млечко *sells* eggs; it does not produce them. This is a symptom of thin entity understanding, not an opportunity — it should not be optimised for.
+
+**5. Mobile is 85% of impressions** (11 vs 2), and ranks far better than desktop (4.27 vs 11.0). Consistent with local-store intent and it validates the mobile-first work already in the codebase.
+
+**6. Only the homepage has any impressions.** The three legal pages registered none. Nothing here argues for breaking the single-page architecture.
+
+**7. Search appearance is empty** — no rich results are being attributed. Expected: Google restricted FAQ rich results to authoritative government and health sites in 2023, so the `FAQPage` markup is valid but will not produce a visible enhancement for a retail shop. It is kept because it is accurate, not because it will earn stars.
+
+**8. All traffic is from Bulgaria.** No geographic dilution.
+
+### What was deliberately *not* concluded
+
+No title or meta description was rewritten. With one click and four named queries over three days, any copy change would be a guess dressed as evidence, and the current title may already be performing. The correct move on a site this new is to strengthen entity signals and technical correctness — done — and re-measure once impressions accumulate.
+
+I also could not inspect the real Plovdiv SERP: the web search available here is US-localised, so competitor and SERP-feature research for Bulgarian queries could not be performed to a standard worth acting on.
 
 ---
 
@@ -185,8 +221,8 @@ The local mobile score of 82 / LCP 4.0s is an **artifact of the dev server, not 
 
 | Idea | Why not |
 |---|---|
-| Rewrite title / meta description | No Search Console data. The current title may already perform; changing it blind risks regression. |
-| Category landing pages (сирене, кашкавал, мляко, яйца, маслини) | No evidence of demand. Would create thin doorway pages — explicitly out of bounds. |
+| Rewrite title / meta description | Search Console shows 13 impressions and 1 click over 3 days. A 0% CTR on 8 impressions is statistically indistinguishable from a healthy CTR. Changing copy on that basis is guessing, and the current title may already perform. |
+| Category landing pages (сирене, кашкавал, мляко, яйца, маслини) | Zero product-category impressions in the export. Only the homepage registers at all. Would create thin doorway pages — explicitly out of bounds. |
 | `sameAs` social profiles | None supplied. |
 | `AggregateRating` / `Review` markup | No genuine figures. Fabrication is a policy violation. |
 | `Product` / `Offer` markup | No product URLs, prices or online purchasing. |
@@ -195,13 +231,44 @@ The local mobile score of 82 / LCP 4.0s is an **artifact of the dev server, not 
 | Remove staging `noindex` | Intentional and correct. |
 | `GroceryStore` → a more specific type | Owner decision, open since the previous report. |
 | Change "Разгледай →" anchor text | Already inside anchors with descriptive `aria-label`s. |
+| Optimise for `производител на яйца` (pos 21) | Млечко sells eggs, it does not produce them. Chasing this would make the entity *less* accurate. |
 
 ---
 
 ## Next measurement window
 
-**After 7 days** — compare against the same window this pass could not read: total and non-branded impressions, clicks, CTR, average position, movement in the 4–10 and 11–20 position bands, local vs product queries, homepage vs legal pages, mobile vs desktop.
+### Baseline to beat (23–29 Aug 2026, 3 days of data)
 
-**After 28 days** — sustained ranking changes, query diversification, non-branded growth, local visibility, CTR movement, newly ranking queries, and indexing changes. Confirm in Search Console that the legal pages are indexed now their logo resolves, and re-run the Rich Results Test to confirm the completed `GroceryStore` entity is picked up.
+| Metric | Value |
+|---|---:|
+| Clicks | 1 |
+| Impressions | 13 |
+| CTR | 7.69% |
+| Average position | 5.31 |
+| Branded share of impressions | 73% |
+| Mobile share of impressions | 85% |
+| Pages with impressions | 1 (homepage) |
+
+### Watchlist — the five queries to track
+
+| Query | Now | What would count as progress |
+|---|---|---|
+| `млечко` | pos 4.38, 8 impr | Position 1–2. This is the brand term; anything less means the entity is still unclear to Google. |
+| `млечко пловдив` | not appearing | Appearing at all. Brand + city is the highest-intent query this business has. |
+| `млечен магазин` | pos 4.0, 1 impr | Impression growth. Position is already fine; the term simply has little volume attached to the site yet. |
+| `магазини в пловдив` | pos 2.0, 1 impr | Impression growth at a stable position. |
+| `производител на яйца` | pos 21, 1 impr | **Disappearing.** This is Google mis-modelling the shop as a producer; losing it is a sign the entity got clearer, not worse. |
+
+### After 7 days
+
+Total and non-branded impressions, clicks, CTR, average position, and whether any *new* non-branded query appears. With volume this low, treat impression count — not CTR — as the signal. Expect noise.
+
+### After 28 days
+
+Only at this point is there enough data to judge anything. Assess: sustained position on the brand term; whether non-branded share has risen above ~27%; query diversification, particularly product terms (сирене, кашкавал, прясно мляко, яйца, маслини) and local modifiers (Пловдив, Пещерско шосе); whether the shop starts appearing for city-qualified category searches; mobile vs desktop split; and whether the legal pages register impressions now their logo resolves.
+
+Also re-run the Rich Results Test to confirm the completed `GroceryStore` entity is picked up, and re-run `node seo-check.mjs https://www.mlechko-magazin.com` after deployment.
+
+**If non-branded impressions are still in single digits after 28 days**, the constraint is not on-page SEO — it is that the business has almost no external presence. The highest-leverage action then is the Google Business Profile and real citations, not further changes to this site.
 
 No ranking outcome is guaranteed.
