@@ -2,6 +2,7 @@ node_modules/
 dairy.zip
 serve.mjs
 screenshot.mjs
+seo-check.mjs
 temporary screenshots/
 premium_dairy_website_research.md
 CLAUDE.md
@@ -14,6 +15,8 @@ brand_assets/
 WEBSITE_IMPROVEMENT_REPORT.md
 AUDIT_REPORT.md
 FIXES_PLAN.md
+SEO-AUDIT.md
+*-Performance-on-Search-*.zip
 
 # Source assets. Kept in the repo as the masters for the optimised
 # derivatives in images/ and media/, but never served to visitors.

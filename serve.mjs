@@ -4,7 +4,7 @@ import { extname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 const MIME = {
   '.html': 'text/html',
@@ -18,6 +18,10 @@ const MIME = {
   '.gif': 'image/gif',
   '.svg': 'image/svg+xml',
   '.webp': 'image/webp',
+  '.avif': 'image/avif',
+  '.xml': 'application/xml',
+  '.txt': 'text/plain',
+  '.webmanifest': 'application/manifest+json',
   '.ico': 'image/x-icon',
   '.mp4': 'video/mp4',
   '.woff': 'font/woff',
