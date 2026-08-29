@@ -227,6 +227,7 @@ The existing staging `noindex` rule and the six security headers were verified b
 | `index.html` | `гк.` → `кв. Младежки хълм` (2 places) | NAP consistency |
 | `index.html` | 4 x `tel:` → E.164 | International dialling; matches schema |
 | `index.html` | canonical + `og:url` trailing slash | Matches sitemap and served URL |
+| `index.html` | `<title>` and `twitter:title` gain the missing noun *Продукти* | `og:title` already had it; the other two read as adjectives with no head noun. 57 chars, within display limits |
 | `index.html` | `GroceryStore` + `WebSite` entity graph | Entity understanding, site-name signal |
 | `privacy-policy.html`, `cookie-policy.html`, `terms.html`, `404.html` | Logo → deployed WebP with dimensions | **Fixes a live 404**; −399 KB per page |
 | `sitemap.xml` | Accurate per-file `lastmod` | Google ignores inaccurate `lastmod` |
@@ -245,7 +246,7 @@ The existing staging `noindex` rule and the six security headers were verified b
 
 | Idea | Why not |
 |---|---|
-| Rewrite title / meta description | Search Console shows 13 impressions and 1 click over 3 days. A 0% CTR on 8 impressions is statistically indistinguishable from a healthy CTR. Changing copy on that basis is guessing, and the current title may already perform. |
+| Rewrite title / meta description **for CTR** | Search Console shows 13 impressions and 1 click over 3 days. A 0% CTR on 8 impressions is statistically indistinguishable from a healthy CTR. Changing copy on that basis is guessing, and the current title may already perform. |
 | Category landing pages (сирене, кашкавал, мляко, яйца, маслини) | Zero product-category impressions in the export. Only the homepage registers at all. Would create thin doorway pages — explicitly out of bounds. |
 | `sameAs` social profiles | None supplied. |
 | `AggregateRating` / `Review` markup | No genuine figures. Fabrication is a policy violation. |
@@ -282,6 +283,14 @@ The existing staging `noindex` rule and the six security headers were verified b
 | `млечен магазин` | pos 4.0, 1 impr | Impression growth. Position is already fine; the term simply has little volume attached to the site yet. |
 | `магазини в пловдив` | pos 2.0, 1 impr | Impression growth at a stable position. |
 | `производител на яйца` | pos 21, 1 impr | **Disappearing.** This is Google mis-modelling the shop as a producer; losing it is a sign the entity got clearer, not worse. |
+
+### Before measuring: force a recrawl
+
+As of 29 August the live SERP snippet still showed the pre-rework description — *"над 30 вида"* and *"Доставка всяка сутрин"*. Production serves the corrected copy (*"над 100"*, *"Седмични доставки"*); Google simply had not recrawled since the 27–28 August changes.
+
+This matters beyond freshness: the cached snippet advertises **daily delivery**, which the business corrected to weekly. Google is showing searchers a promise the shop does not make.
+
+After merging and deploying, open Search Console → URL Inspection → enter the homepage → **Request Indexing**. The sitemap `lastmod` is now accurate, which helps, but an explicit request is faster. Do not measure the next window until the snippet reflects the current copy, or the CTR baseline is measuring text that no longer exists.
 
 ### After 7 days
 
