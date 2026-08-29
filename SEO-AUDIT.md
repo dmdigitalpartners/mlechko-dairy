@@ -194,6 +194,29 @@ All well inside Google's thresholds (LCP ≤ 2.5s, CLS < 0.1). **No performance 
 
 The local mobile score of 82 / LCP 4.0s is an **artifact of the dev server, not a real defect**: `serve.mjs` sends no compression, so the 152 KB HTML and the 1.57 MB hero video arrive uncompressed over Lighthouse's throttled connection. The same page on Vercel scores 99 with LCP 1.5s. This was verified, not assumed.
 
+### Caching — the one performance gap found
+
+Every static asset was served with Vercel's default `Cache-Control: public, max-age=0, must-revalidate`. Repeat visitors therefore re-validated roughly thirty assets on every visit, including the 1.6 MB hero video. The responses are cheap 304s, so this costs latency rather than bandwidth — but on mobile, where 85% of impressions land, that is thirty round trips before the page settles.
+
+Now set in `vercel.json`:
+
+| Path | Policy | Reasoning |
+|---|---|---|
+| `/fonts/*` | `max-age=31536000, immutable` | Google Fonts filenames are content-hashed, so the bytes at a URL never change |
+| `/images/*`, `/media/*` | `max-age=86400, stale-while-revalidate=604800` | Semantic filenames, so a replaced asset keeps its URL. One day fresh, then served stale for a week while revalidating — fast repeat visits without risking a week-old photo after a swap |
+| Icons, `site.webmanifest` | `max-age=604800` | Change rarely |
+
+The existing staging `noindex` rule and the six security headers were verified byte-identical after the edit.
+
+### Optimisations considered and rejected
+
+| Candidate | Lighthouse estimate | Why not |
+|---|---|---|
+| Re-encode `hero-poster-900.webp` | 59 KB | The estimate is against an idealised encoder. No encoder is installed (`ffmpeg`, `cwebp`, `avifenc`, ImageMagick all absent), and re-encoding through Chrome's canvas produced **83.8 KB from 90.6 KB** — 7 KB for visible quality loss on the LCP poster. Not worth a new toolchain at LCP 1.5s. |
+| Serve smaller category/feature images | ~80 KB | Lighthouse compares against CSS pixels, not device pixels. An 800 px source for a 364 CSS-px slot is correct on a 2x screen; shrinking would look soft. `logo-340.webp` is flagged for the same reason. |
+| Minify inline CSS/JS | 9 KB | The document is brotli-compressed, so the real saving is 1–2 KB. It would destroy the extensive explanatory comments this codebase deliberately maintains. |
+| Remove unused CSS | 11 KB | Lighthouse cannot exercise the open mobile menu, hover and focus states, so "unused" is unreliable. High regression risk for ~2 KB compressed. |
+
 ---
 
 ## Changes implemented
@@ -207,6 +230,7 @@ The local mobile score of 82 / LCP 4.0s is an **artifact of the dev server, not 
 | `index.html` | `GroceryStore` + `WebSite` entity graph | Entity understanding, site-name signal |
 | `privacy-policy.html`, `cookie-policy.html`, `terms.html`, `404.html` | Logo → deployed WebP with dimensions | **Fixes a live 404**; −399 KB per page |
 | `sitemap.xml` | Accurate per-file `lastmod` | Google ignores inaccurate `lastmod` |
+| `vercel.json` | `Cache-Control` for `/fonts`, `/images`, `/media`, icons | Every static asset was served `max-age=0, must-revalidate` |
 | `serve.mjs` | `PORT` env override; AVIF/XML/TXT/webmanifest MIME types | Dev-only. Port 3000 was occupied by an unrelated project; the missing AVIF type corrupted local measurement |
 | `seo-check.mjs` | New repeatable validation script | Regression safety |
 | `package-lock.json` | `bokki-dairy` → `mlechko-dairy` | `npm install` corrected a stale name |
