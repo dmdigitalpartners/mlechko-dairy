@@ -1339,43 +1339,8 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
   .t-sep { margin-bottom: 8px; }
 }
   </style>
-  <script type="text/javascript">
-    /* Microsoft Clarity is consent-gated and the gate is READ-ONLY.
-       The banner that used to write the stored choice has been removed, so
-       this script can no longer set 'mlechko-consent' — only read it. In
-       practice that means Clarity loads for exactly one group: visitors whose
-       browser still holds an 'accepted' value written by the old banner. New
-       visitors, anyone who declined, anyone on a fresh browser or device, and
-       anyone who has cleared site data will never load it, and the accepted
-       cohort shrinks as storage is cleared.
-
-       The writer (store) and the get/set members were removed because nothing
-       called them once the banner went; behaviour is identical either way. */
-    (function () {
-      var KEY = 'mlechko-consent';
-      var loaded = false;
-
-      function loadClarity() {
-        if (loaded) return;
-        loaded = true;
-        (function(c,l,a,r,i,t,y){
-            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-        })(window, document, "clarity", "script", "y7gch7ijp7");
-      }
-
-      function stored() {
-        try { return localStorage.getItem(KEY); } catch (e) { return null; }
-      }
-
-      window.MlechkoConsent = {
-        hasAnalytics: function () { return stored() === 'accepted'; }
-      };
-
-      if (stored() === 'accepted') loadClarity();
-    })();
-  </script>
+  <!-- Microsoft Clarity: loaded by /js/consent.js ONLY after the visitor accepts (EEA consent requirement). -->
+  <script src="/js/consent.js" defer></script>
 </head>
 <body>
 
@@ -2084,21 +2049,19 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; }
 <script>
 /* ============================================================
    NOTE ON ANALYTICS
-   The consent banner and its footer trigger were removed. The consent GATE in
-   the head script is untouched and still decides whether Clarity loads, so
-   analytics behaviour is unchanged by this file: visitors who accepted before
-   still load it, and nobody else can now opt in, because the UI that wrote
-   the stored choice is gone.
+   Consent (banner, stored choice, footer "Настройки за бисквитки" button and the
+   Clarity consentv2 signal) lives in /js/consent.js. Clarity loads only after
+   the visitor accepts.
    ============================================================ */
 
 /* ============================================================
    CTA TRACKING
    Answers the only question that matters for a shop site: does the website
    send people to the shop? Routed through Clarity, so it inherits the
-   consent gate in the head script and fires for nobody without stored consent.
+   consent gate in /js/consent.js and fires for nobody without consent.
    ============================================================ */
 function trackCta(name) {
-  if (!window.MlechkoConsent.hasAnalytics()) return;
+  if (!(window.MlechkoConsent && window.MlechkoConsent.hasAnalytics())) return;
   if (typeof window.clarity === 'function') window.clarity('event', 'cta-' + name);
 }
 document.addEventListener('click', e => {
