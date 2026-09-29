@@ -126,6 +126,8 @@ main.legal-doc strong { color: var(--color-slate-deep); font-weight: 600; }
   border-top: 1px solid rgba(44,62,80,0.1);
 }
 .legal-footer a { color: var(--color-slate-mid); }
+.legal-consent-btn { font: inherit; padding: .55rem 1rem; min-height: 44px; border-radius: 8px; border: 1px solid var(--color-slate-mid); background: transparent; color: inherit; cursor: pointer; }
+.legal-consent-btn:focus-visible { outline: 3px solid #C8A96E; outline-offset: 2px; }
 @media (max-width: 640px) {
   .legal-header { padding: 24px 20px 0; }
   main.legal-doc { padding: 36px 20px 72px; }
@@ -134,6 +136,8 @@ main.legal-doc strong { color: var(--color-slate-deep); font-weight: 600; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
   </style>
+  <!-- Microsoft Clarity: loaded by /js/consent.js ONLY after the visitor accepts (EEA consent requirement). -->
+  <script src="/js/consent.js" defer></script>
 </head>
 <body>
 
@@ -147,7 +151,7 @@ main.legal-doc strong { color: var(--color-slate-deep); font-weight: 600; }
 
 <main class="legal-doc">
   <h1>Политика за бисквитки</h1>
-  <p class="legal-updated">Последна актуализация: 19 август 2026 г.</p>
+  <p class="legal-updated">Последна актуализация: 27 септември 2026 г.</p>
 
   <h2>1. Какво представляват бисквитките</h2>
   <p>Бисквитките (cookies) са малки текстови файлове, които уебсайтовете могат да запазват на вашето устройство, за да запомнят информация за посещението ви.</p>
@@ -171,8 +175,9 @@ main.legal-doc strong { color: var(--color-slate-deep); font-weight: 600; }
   <p>Ако предпочитате да избегнете бисквитки от Google Maps, адресът на магазина е наличен и в текстов вид на страницата, а можете да блокирате вграждания (iframes) от google.com чрез настройките на браузъра си или разширение за поверителност.</p>
 
   <h2>5. Управление на съгласието</h2>
-  <p>Аналитичните бисквитки се зареждат само ако в браузъра ви е запазено съгласие от предишно посещение. Ако такова съгласие липсва, Microsoft Clarity не се зарежда и сайтът работи напълно нормално.</p>
-  <p>Можете да оттеглите вече дадено съгласие по всяко време, като изтриете данните на сайта от настройките на браузъра си, както е описано в раздел 6.</p>
+  <p>При първото ви посещение ще видите кратко съобщение, в което можете да приемете или да откажете аналитичните бисквитки. Microsoft Clarity се зарежда само ако изберете „Приемам“. Ако откажете или не направите избор, Clarity не се зарежда и сайтът работи напълно нормално.</p>
+  <p>Изборът ви се запазва само в този браузър (в localStorage, не като бисквитка) за 6 месеца, след което ще бъдете попитани отново. Можете да го промените или да оттеглите дадено съгласие по всяко време чрез бутона „Настройки за бисквитки“ по-долу или в долната част на всяка страница. При оттегляне бисквитките на Clarity се изтриват.</p>
+  <p><button type="button" data-consent-open class="legal-consent-btn">Настройки за бисквитки</button></p>
 
   <h2>6. Управление през браузъра</h2>
   <p>Независимо от избора ви тук, можете да преглеждате, блокирате или изтривате всички бисквитки по всяко време чрез настройките на браузъра си, включително тези, поставени от вградената карта на Google Maps.</p>
